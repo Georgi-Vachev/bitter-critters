@@ -1,25 +1,57 @@
-// src/components/PokemonTable.tsx
 import React, { useEffect, useRef, useState } from "react";
 import * as PIXI from "pixi.js";
-import { gsap } from "gsap";
 import axios from "axios";
 import { Pokemon } from "../types/pokemon";
+import PokemonCard from "./PokemonCard";
 
 const POKEAPI_URLS = Array.from({ length: 30 }, (_, i) => `https://pokeapi.co/api/v2/pokemon/${i + 1}/`);
+
+let canvas: HTMLCanvasElement
+
+const landscapeWidth = 2560
+const landscapeHeight = 1440
+const portraitWidth = 1440
+const portraitHeight = 2560
+const cardWidth = 450
+const cardHeight = 580
+
+const pokemonCards: Array<PIXI.Container> = []
 
 const PokemonTable: React.FC = () => {
     const pixiContainer = useRef<HTMLDivElement>(null);
     const app = useRef<PIXI.Application | null>(null);
     const [pokemons, setPokemons] = useState<Pokemon[]>([]);
 
-    // Function to resize the PixiJS canvas
+    function scaleCanvas(isPortrait: boolean) {
+        canvas = app.current!.canvas as HTMLCanvasElement
+        let newWidth = window.innerWidth
+        let newHeight = window.innerHeight
+        const aspectRatio = isPortrait ? portraitWidth / portraitHeight : landscapeWidth / landscapeHeight
+
+        if (newWidth / newHeight > aspectRatio) {
+            newWidth = newHeight * aspectRatio
+        } else {
+            newHeight = newWidth / aspectRatio
+        }
+
+        canvas.style.width = `${newWidth}px`
+        canvas.style.height = `${newHeight}px`
+    }
+
     const resizeCanvas = () => {
         if (app.current) {
-            app.current.renderer.resize(window.innerWidth, window.innerHeight);
+            const isPortrait = window.innerHeight > window.innerWidth
+            if (isPortrait) {
+                app.current.renderer.resize(portraitWidth, portraitHeight)
+            } else {
+                app.current.renderer.resize(landscapeWidth, landscapeHeight)
+            }
+
+            scaleCanvas(isPortrait)
+            positionCards()
         }
     };
 
-    // Initialize PixiJS Application
     useEffect(() => {
         const initializePixi = async () => {
             if (!app.current && pixiContainer.current) {
@@ -28,15 +60,15 @@ const PokemonTable: React.FC = () => {
                 pixiContainer.current.appendChild(app.current?.canvas);
 
                 (globalThis as any).__PIXI_APP__ = app.current;
+
+                resizeCanvas()
             }
         };
 
         initializePixi();
 
-        // Add event listener for window resize
         window.addEventListener("resize", resizeCanvas);
 
-        // Clean up PixiJS Application and event listener on component unmount
         return () => {
             window.removeEventListener("resize", resizeCanvas);
             if (app.current) {
@@ -44,6 +76,24 @@ const PokemonTable: React.FC = () => {
             }
         };
     }, []);
+
+    function positionCards() {
+        const isPortrait = window.innerHeight > window.innerWidth
+
+        const margin = isPortrait ? 22 : 50;
+        let x = margin;
+        let y = margin;
+
+        pokemonCards.forEach((card) => {
+            card.position.set(x, y);
+
+            x += cardWidth + margin;
+            if (x + cardWidth > (isPortrait ? portraitWidth : landscapeWidth) - margin) {
+                x = margin;
+                y += cardHeight + margin;
+            }
+        });
+    }
 
     useEffect(() => {
         const fetchPokemons = async () => {
@@ -74,145 +124,26 @@ const PokemonTable: React.FC = () => {
         fetchPokemons();
     }, []);
 
-    // Render Pokémon cards in the PixiJS application
     useEffect(() => {
         if (app.current) {
-            // Clear any previous cards
             app.current.stage.removeChildren();
-
-            // Layout variables
-            const cardWidth = 220;
-            const cardHeight = 350;
-            const offsetX = 300
-            const margin = 20;
-            let x = margin;
-            let y = margin;
+            pokemonCards.length = 0
 
             pokemons.forEach((pokemon, index) => {
-                // Create a PixiJS Container for the card
-                const card = new PIXI.Container();
-                card.width = cardWidth;
-                card.height = cardHeight;
-                card.position.set(x + offsetX, y);
-
-                // Draw a background rectangle for each card
-                const background = new PIXI.Graphics();
-                background.beginFill(0x444444);
-                background.drawRoundedRect(0, 0, cardWidth, cardHeight, 10);
-                background.endFill();
-                card.addChild(background);
-
-                // Load the Pokémon sprite
-                const localImagePath = `/assets/images/${pokemon.name.toLowerCase()}.png`;
-                const img = new Image();
-                img.src = localImagePath;
-                console.log(localImagePath);
-                img.onload = () => {
-                    console.error("Image loaded");
-                    const texture = PIXI.Texture.from(img);
-                    const sprite = new PIXI.Sprite(texture);
-                    sprite.width = 128;
-                    sprite.height = 128;
-                    sprite.position.set((cardWidth - sprite.width) / 2, 20);
-                    card.addChild(sprite);
-                };
-                img.onerror = () => {
-                    console.error("Failed to load image:", localImagePath);
-                };
-
-                // Add Text elements for name, ability, and stats
-                const nameText = new PIXI.Text(`Name: ${pokemon.name}`, { fontSize: 14, fill: 0xffffff });
-                nameText.position.set(10, 150);
-                card.addChild(nameText);
-
-                const abilityText = new PIXI.Text(`Ability: ${pokemon.abilities[0]}`, { fontSize: 12, fill: 0xffffff });
-                abilityText.position.set(10, 170);
-                card.addChild(abilityText);
-
-                pokemon.moves.slice(0, 4).forEach((move, moveIndex) => {
-                    const moveText = new PIXI.Text(`Move ${moveIndex + 1}: ${move}`, { fontSize: 12, fill: 0xffffff });
-                    moveText.position.set(10, 190 + moveIndex * 20);
-                    card.addChild(moveText);
-                });
-
-                // Stats display
-                const statsText = [
-                    `Speed: ${pokemon.stats.speed}`,
-                    `Defense: ${pokemon.stats.defense}`,
-                    `Attack: ${pokemon.stats.attack}`,
-                    `HP: ${pokemon.stats.hp}`,
-                ];
-                statsText.forEach((text, statIndex) => {
-                    const statText = new PIXI.Text(text, { fontSize: 12, fill: 0xffffff });
-                    statText.position.set(10, 270 + statIndex * 20);
-                    card.addChild(statText);
-                });
-
-                // Add card to the PixiJS stage
+                const card = PokemonCard(pokemon, cardWidth, cardHeight);
+                card.interactive = true;
                 app.current?.stage.addChild(card);
 
-                // Update x and y positions for grid layout
-                x += cardWidth + margin;
-                if (x + cardWidth > window.innerWidth) {
-                    x = margin;
-                    y += cardHeight + margin;
-                }
+                pokemonCards.push(card)
             });
+
+            positionCards()
         }
     }, [pokemons]);
 
     return (
         <div ref={pixiContainer}></div>
     );
-};
-
-const createPokemonCard = (pokemon: Pokemon): PIXI.Container => {
-    const container = new PIXI.Container();
-
-    // Load the Pokémon sprite
-    const sprite = PIXI.Sprite.from(pokemon.spriteUrl);
-    sprite.width = 64;
-    sprite.height = 64;
-    sprite.position.set(16, 16);
-
-    // Name Text
-    const nameText = new PIXI.Text(`Name: ${pokemon.name}`, { fontSize: 14, fill: 0xffffff });
-    nameText.position.set(16, 90);
-
-    // Ability Text
-    const abilityText = new PIXI.Text(`Ability: ${pokemon.abilities[0]}`, { fontSize: 12, fill: 0xffffff });
-    abilityText.position.set(16, 110);
-
-    // Moves
-    pokemon.moves.slice(0, 4).forEach((move, index) => {
-        const moveText = new PIXI.Text(`Move ${index + 1}: ${move}`, { fontSize: 12, fill: 0xffffff });
-        moveText.position.set(16, 130 + index * 20);
-        container.addChild(moveText);
-    });
-
-    // Stats
-    const statsText = [
-        `Speed: ${pokemon.stats.speed}`,
-        `Defense: ${pokemon.stats.defense}`,
-        `Attack: ${pokemon.stats.attack}`,
-        `HP: ${pokemon.stats.hp}`,
-    ];
-
-    statsText.forEach((text, index) => {
-        const statText = new PIXI.Text(text, { fontSize: 12, fill: 0xffffff });
-        statText.position.set(16, 210 + index * 20);
-        container.addChild(statText);
-    });
-
-    // Set container properties
-    container.addChild(sprite, nameText, abilityText);
-    container.width = 200;
-    container.height = 250;
-    container.interactive = true;
-    container.pivot.set(0.5);
-    container.position.set(16, 16);
-
-    return container;
 };
 
 export default PokemonTable;
