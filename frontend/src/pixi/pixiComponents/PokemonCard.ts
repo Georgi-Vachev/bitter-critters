@@ -1,13 +1,12 @@
 import * as PIXI from 'pixi.js';
-import { Pokemon } from '../types/pokemon';
+import { Pokemon } from '../../types/pokemon';
 
 const PokemonCard = (pokemon: Pokemon, cardWidth: number, cardHeight: number): PIXI.Container => {
     const card = new PIXI.Container();
 
     const background = new PIXI.Graphics();
-    background.beginFill(0x444444);
-    background.drawRoundedRect(0, 0, cardWidth, cardHeight, 10);
-    background.endFill();
+    background.roundRect(0, 0, cardWidth, cardHeight, 10);
+    background.fill(0x444444);
     card.addChild(background);
 
     const localImagePath = `/assets/images/${pokemon.name.toLowerCase()}.png`;
@@ -19,13 +18,15 @@ const PokemonCard = (pokemon: Pokemon, cardWidth: number, cardHeight: number): P
         sprite.width = 200; // Increased width
         sprite.height = 200; // Increased height
         sprite.position.set((cardWidth - sprite.width) / 2, 5);
+        sprite.cursor = "pointer";
+
         card.addChild(sprite);
     };
     img.onerror = () => {
         console.error("Failed to load image:", localImagePath);
     };
 
-    const nameText = new PIXI.Text(`${pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)}`, { fontSize: 30, fill: 0xadd8e6, fontWeight: 'bold' }); // Changed color to light blue
+    const nameText = new PIXI.Text({ text: `${pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)}`, style: { fontSize: 30, fill: 0xadd8e6, fontWeight: 'bold' } }); // Changed color to light blue
     nameText.anchor.set(0.5, 0);
     nameText.position.set(cardWidth / 2, 200);
     card.addChild(nameText);

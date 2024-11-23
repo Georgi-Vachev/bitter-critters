@@ -1,20 +1,21 @@
-import React from "react";
+import React, { useState } from 'react';
 import RegisterLoginForm from "./components/RegisterLoginForm";
-import PokemonTable from "./components/PokemonTable";
+import PixiContainer from './components/PixiContainer';
 import "./App.css";
 
 const App: React.FC = () => {
+  const [showPixi, setShowPixi] = useState<boolean>(true);
+
   return (
     <div className="app-container">
-      <h1>Bitter Critters</h1>
-      <div className="login-register-form">
+      {/* <h1>Bitter Critters</h1> */}
+      {/* <div className="login-register-form">
         <RegisterLoginForm />
-      </div>
-      <div className="pokemon-table-container">
-        <PokemonTable />
-      </div>
-
-      {/* <Battle /> */}
+      </div> */}
+      {/* <button onClick={() => setShowPixi(!showPixi)}>
+        {showPixi ? 'Hide PIXI App' : 'Show PIXI App'}
+      </button> */}
+      {showPixi && <PixiContainer visible={showPixi} />}
     </div>
   );
 };
