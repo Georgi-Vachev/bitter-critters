@@ -1,6 +1,6 @@
 import * as PIXI from "pixi.js";
 import axios from "axios";
-import PokemonCard from "./pixiComponents/PokemonCard";
+import Card from "./pixiComponents/Card";
 
 const POKEAPI_URLS = Array.from({ length: 30 }, (_, i) => `https://pokeapi.co/api/v2/pokemon/${i + 1}/`);
 
@@ -12,6 +12,8 @@ const portraitWidth = 1440
 const portraitHeight = 2560
 const cardWidth = 450
 const cardHeight = 580
+const cardMarginPortrait = 22
+const cardMarginLandscape = 50
 
 export class PixiApp {
     protected app: PIXI.Application | null = null;
@@ -36,10 +38,21 @@ export class PixiApp {
 
         window.addEventListener("resize", this.resizeCanvas.bind(this));
 
+        this.app.stage.interactive = true;
+        this.app.stage.hitArea = new PIXI.Rectangle(0, 0, this.app.renderer.width, this.app.renderer.height);
+
+        this.app.stage.on("pointerdown", this.onDragStart.bind(this));
+        this.app.stage.on("pointermove", this.onDragMove.bind(this));
+        this.app.stage.on("pointerup", this.onDragEnd.bind(this));
+        this.app.stage.on("pointerupoutside", this.onDragEnd.bind(this));
+
+        this.app.stage.on("wheel", (event: WheelEvent) => {
+            this.handleScroll(event);
+        });
+
         canvas = this.app.canvas;
 
         this.resizeCanvas();
-        this.addOverlay();
         this.addCards();
     }
 
@@ -62,26 +75,6 @@ export class PixiApp {
             this.app.destroy(true, { children: true });
             this.app = null;
         }
-    }
-
-    protected addOverlay() {
-        if (!this.app) return;
-
-        this.overlay = new PIXI.Graphics();
-
-        this.overlay.rect(0, 0, this.app.renderer.width, this.app.renderer.height);
-        this.overlay.fill({ color: 0x000000, alpha: 0 });
-
-        this.overlay.interactive = true;
-        this.overlay.cursor = "pointer";
-
-        this.overlay.on("pointerdown", this.onDragStart.bind(this));
-        this.overlay.on("pointermove", this.onDragMove.bind(this));
-        this.overlay.on("pointerup", this.onDragEnd.bind(this));
-        this.overlay.on("pointerupoutside", this.onDragEnd.bind(this));
-        this.overlay.on("wheel", this.handleScroll.bind(this));
-
-        this.app.stage.addChild(this.overlay);
     }
 
     protected onDragStart(event: PIXI.FederatedPointerEvent): void {
@@ -159,22 +152,22 @@ export class PixiApp {
         try {
             const responses = await Promise.all(POKEAPI_URLS.map((url) => axios.get(url)));
             const data = responses.map((response) => response.data);
-            const pokemonData = data.map((pokemon: any) => ({
-                id: pokemon.id,
-                name: pokemon.name,
-                spriteUrl: pokemon.sprites.front_default,
+            const cardsData = data.map((cardData: any) => ({
+                id: cardData.id,
+                name: cardData.name,
+                spriteUrl: cardData.sprites.front_default,
                 stats: {
-                    hp: pokemon.stats[0].base_stat,
-                    attack: pokemon.stats[1].base_stat,
-                    defense: pokemon.stats[2].base_stat,
-                    specialAttack: pokemon.stats[3].base_stat,
-                    specialDefense: pokemon.stats[4].base_stat,
-                    speed: pokemon.stats[5].base_stat,
+                    hp: cardData.stats[0].base_stat,
+                    attack: cardData.stats[1].base_stat,
+                    defense: cardData.stats[2].base_stat,
+                    specialAttack: cardData.stats[3].base_stat,
+                    specialDefense: cardData.stats[4].base_stat,
+                    speed: cardData.stats[5].base_stat,
                 },
-                abilities: pokemon.abilities.map((ability: any) => ability.ability.name),
-                moves: pokemon.moves.map((move: any) => move.move.name),
+                abilities: cardData.abilities.map((ability: any) => ability.ability.name),
+                moves: cardData.moves.map((move: any) => move.move.name),
             }));
-            this.cardsInfo.push(...pokemonData);
+            this.cardsInfo.push(...cardsData);
         } catch (error) {
             console.error("Error fetching Pokémon data:", error);
         }
@@ -182,7 +175,7 @@ export class PixiApp {
 
     protected calculateMaxScroll() {
         const isPortrait = window.innerHeight > window.innerWidth;
-        const margin = isPortrait ? 22 : 50;
+        const margin = isPortrait ? cardMarginPortrait : cardMarginLandscape;
 
         const rows = Math.ceil(this.cards.length / Math.floor((isPortrait ? portraitWidth : landscapeWidth) / (cardWidth + margin)));
         const totalHeight = rows * (cardHeight + margin);
@@ -193,8 +186,8 @@ export class PixiApp {
     }
 
     protected createCards() {
-        this.cardsInfo.forEach((pokemon) => {
-            const card = PokemonCard(pokemon, cardWidth, cardHeight);
+        this.cardsInfo.forEach((cardData) => {
+            const card = new Card(cardData, cardWidth, cardHeight);
             this.cardsContainer?.addChild(card);
             this.cards.push(card);
         });
@@ -202,13 +195,13 @@ export class PixiApp {
 
     protected positionCards() {
         const isPortrait = window.innerHeight > window.innerWidth;
-        const margin = isPortrait ? 22 : 50;
+        const margin = isPortrait ? cardMarginPortrait : cardMarginLandscape;
 
         let x = margin;
         let y = margin;
 
         this.cards.forEach((card) => {
-            card.position.set(x, y);
+            card.position.set(x + card.width / 2, y + card.height / 2);
 
             x += cardWidth + margin;
             if (x + cardWidth > (isPortrait ? portraitWidth : landscapeWidth) - margin) {
