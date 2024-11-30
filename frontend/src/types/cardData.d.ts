@@ -1,4 +1,4 @@
-interface PokemonStats {
+interface Stats {
     hp: number;
     attack: number;
     defense: number;
@@ -7,11 +7,11 @@ interface PokemonStats {
     specialDefense: number;
 }
 
-export interface Pokemon {
+export interface CardData {
     id: number;
     name: string;
     spriteUrl: string;
-    stats: PokemonStats;
+    stats: Stats;
     abilities: string[];
     moves: string[];
 }
