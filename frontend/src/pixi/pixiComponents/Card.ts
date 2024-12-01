@@ -1,34 +1,21 @@
 import * as PIXI from 'pixi.js';
 import { CardData } from '../../types/cardData';
 
-class Card extends PIXI.Container {
+export default class Card extends PIXI.Container {
     static readonly CARD_HOVER_SCALE = 1.05;
     static readonly CARD_IDLE_SCALE = 1;
 
     constructor(cardData: CardData, cardWidth: number, cardHeight: number) {
         super();
         this.createCard(cardData, cardWidth, cardHeight);
+        this.addEventListeners();
     }
 
     protected createCard(cardData: CardData, cardWidth: number, cardHeight: number) {
         const background = new PIXI.Graphics();
         background.roundRect(0, 0, cardWidth, cardHeight, 10);
         background.fill(0x444444);
-        background.tint = 0xffffff;
         this.addChild(background);
-
-        background.interactive = true;
-        background.cursor = "pointer";
-
-        background.on("pointerover", () => {
-            background.tint = 0xdddddd;
-            this.scale.set(Card.CARD_HOVER_SCALE);
-        });
-
-        background.on("pointerout", () => {
-            background.tint = 0xffffff;
-            this.scale.set(Card.CARD_IDLE_SCALE);
-        });
 
         const localImagePath = `/assets/images/${cardData.name.toLowerCase()}.png`;
         const img = new Image();
@@ -79,6 +66,16 @@ class Card extends PIXI.Container {
 
         this.pivot.set(cardWidth / 2, cardHeight / 2);
     }
-}
 
-export default Card;
+    protected addEventListeners() {
+        this.on("pointerover", () => {
+            this.tint = 0xdddddd;
+            this.scale.set(Card.CARD_HOVER_SCALE);
+        });
+
+        this.on("pointerout", () => {
+            this.tint = 0xffffff;
+            this.scale.set(Card.CARD_IDLE_SCALE);
+        });
+    }
+}

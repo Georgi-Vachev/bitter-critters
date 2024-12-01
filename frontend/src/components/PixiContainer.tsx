@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { PixiApp } from '../pixi/PixiApp';
+import PixiApp from '../pixi/PixiApp';
 
 interface PixiContainerProps {
     visible: boolean;

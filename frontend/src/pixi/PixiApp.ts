@@ -1,6 +1,7 @@
 import * as PIXI from "pixi.js";
 import axios from "axios";
 import Card from "./pixiComponents/Card";
+import ChoiceScreen from "./pixiComponents/ChoiceScreen";
 
 const POKEAPI_URLS = Array.from({ length: 30 }, (_, i) => `https://pokeapi.co/api/v2/pokemon/${i + 1}/`);
 
@@ -15,9 +16,8 @@ const cardHeight = 580
 const cardMarginPortrait = 22
 const cardMarginLandscape = 50
 
-export class PixiApp {
+export default class PixiApp {
     protected app: PIXI.Application | null = null;
-    protected overlay: PIXI.Graphics | null = null;
     protected cardsInfo: Array<any> = [];
     protected cards: Array<PIXI.Container> = [];
     protected scrollOffset: number = 0;
@@ -25,9 +25,11 @@ export class PixiApp {
     protected isDragging: boolean = false;
     protected dragStartY: number = 0;
     protected cardsContainer: PIXI.Container | null = null;
+    protected choiceScreen: ChoiceScreen;
 
     constructor() {
         this.app = new PIXI.Application();
+        this.choiceScreen = new ChoiceScreen(this.app);
     }
 
     public async init(options: { width: number; height: number; backgroundColor: number }): Promise<void> {
@@ -126,15 +128,8 @@ export class PixiApp {
         const scaleY = (window.innerHeight / 1.1) / this.app.renderer.height;
         const scale = Math.min(scaleX, scaleY);
 
-        canvas = this.app.canvas;
         canvas.style.width = `${this.app.renderer.width * scale}px`;
         canvas.style.height = `${this.app.renderer.height * scale}px`;
-
-        if (this.overlay) {
-            this.overlay.clear();
-            this.overlay.fill(0x000000, 0);
-            this.overlay.rect(0, 0, this.app.renderer.width, this.app.renderer.height);
-        }
     };
 
     protected addCards() {
@@ -190,6 +185,26 @@ export class PixiApp {
             const card = new Card(cardData, cardWidth, cardHeight);
             this.cardsContainer?.addChild(card);
             this.cards.push(card);
+
+            card.interactive = true;
+
+            card.on("pointerdown", () => {
+                card.interactive = false;
+                card.tint = 0xffffff;
+                card.scale.set(Card.CARD_IDLE_SCALE)
+                this.app!.stage.interactive = false;
+
+                this.choiceScreen.show(
+                    card,
+                    cardData.name,
+                    (name: string) => {
+                        console.log(`Picked: ${name}`);
+                    },
+                    (name: string) => {
+                        console.log(`Fight with: ${name}`);
+                    }
+                );
+            });
         });
     }
 
