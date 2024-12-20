@@ -1,4 +1,5 @@
 import * as PIXI from "pixi.js";
+import { gsap } from "gsap";
 
 export default class ChoiceScreen {
     static readonly BUTTON_HEIGHT = 100;
@@ -38,13 +39,27 @@ export default class ChoiceScreen {
         });
 
         this.cardContainer = new PIXI.Container();
-        card.position.set(this.app.renderer.width / 2, this.app.renderer.height / 2 - ChoiceScreen.BUTTON_HEIGHT / 2);
-        card.pivot.set(card.width / 2, card.height / 2);
-        card.scale.set(2);
-        this.cardContainer.addChild(card);
         this.overlay.addChild(this.cardContainer);
 
-        this.createButtons(cardName);
+        card.pivot.set(card.width / 2, card.height / 2);
+        this.cardContainer.addChild(card);
+
+        const cardProps = { x: card.x, y: card.y, scaleX: card.scale.x, scaleY: card.scale.y };
+
+        gsap.to(cardProps, {
+            x: this.app.renderer.width / 2,
+            y: this.app.renderer.height / 2 - ChoiceScreen.BUTTON_HEIGHT / 2,
+            scaleX: 2,
+            scaleY: 2,
+            duration: 0.25,
+            onUpdate: () => {
+                card.position.set(cardProps.x, cardProps.y);
+                card.scale.set(cardProps.scaleX, cardProps.scaleY);
+            },
+            onComplete: () => {
+                this.createButtons(cardName);
+            }
+        });
     }
 
     public hide(): void {
