@@ -5,10 +5,16 @@ export default class Card extends PIXI.Container {
     static readonly CARD_HOVER_SCALE = 1.05;
     static readonly CARD_IDLE_SCALE = 1;
 
+    protected _texutre!: PIXI.Texture;
+
     constructor(cardData: CardData, cardWidth: number, cardHeight: number) {
         super();
         this.createCard(cardData, cardWidth, cardHeight);
         this.addEventListeners();
+    }
+
+    get cardTexture(): PIXI.Texture {
+        return this._texutre;
     }
 
     protected createCard(cardData: CardData, cardWidth: number, cardHeight: number) {
@@ -27,6 +33,7 @@ export default class Card extends PIXI.Container {
             sprite.height = 200;
             sprite.position.set((cardWidth - sprite.width) / 2, 5);
             sprite.cursor = "pointer";
+            this._texutre = texture;
 
             this.addChild(sprite);
         };

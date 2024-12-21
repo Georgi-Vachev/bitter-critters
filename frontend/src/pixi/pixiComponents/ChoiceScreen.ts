@@ -11,6 +11,7 @@ export default class ChoiceScreen {
     protected fightButton: PIXI.Container | null = null;
     protected originalParent: PIXI.Container | null = null;
     protected originalPosition: { x: number; y: number } | null = null;
+    protected cardName: string = "";
     protected onPick: ((name: string) => void) | null = null;
     protected onFight: ((name: string) => void) | null = null;
 
@@ -24,24 +25,29 @@ export default class ChoiceScreen {
 
         this.originalParent = card.parent;
         this.originalPosition = { x: card.x, y: card.y };
-
         this.originalParent?.removeChild(card);
+        this.cardName = cardName;
 
-        this.overlay = new PIXI.Graphics();
-        this.overlay.rect(0, 0, this.app.renderer.width, this.app.renderer.height);
-        this.overlay.fill(0x000000, 0.5);
-        this.overlay.interactive = true;
-        this.app.stage.addChild(this.overlay);
+        if (this.overlay) {
+            this.overlay.visible = true
+        } else {
+            this.overlay = new PIXI.Graphics();
+            this.overlay.rect(0, 0, this.app.renderer.width, this.app.renderer.height);
+            this.overlay.fill(0x000000, 0.5);
+            this.overlay.interactive = true;
+            this.app.stage.addChild(this.overlay);
 
-        this.overlay.on("pointerdown", () => {
-            card.interactive = true;
-            this.hide();
-        });
+            this.overlay.on("pointerdown", () => {
+                card.interactive = true;
+                this.hide();
+            });
+        }
+
+        card.pivot.set(card.width / 2, card.height / 2);
 
         this.cardContainer = new PIXI.Container();
         this.overlay.addChild(this.cardContainer);
 
-        card.pivot.set(card.width / 2, card.height / 2);
         this.cardContainer.addChild(card);
 
         const cardProps = { x: card.x, y: card.y, scaleX: card.scale.x, scaleY: card.scale.y };
@@ -57,7 +63,12 @@ export default class ChoiceScreen {
                 card.scale.set(cardProps.scaleX, cardProps.scaleY);
             },
             onComplete: () => {
-                this.createButtons(cardName);
+                if (this.pickButton && this.fightButton) {
+                    this.pickButton.visible = true;
+                    this.fightButton.visible = true;
+                } else {
+                    this.createButtons();
+                }
             }
         });
     }
@@ -69,6 +80,7 @@ export default class ChoiceScreen {
             card.scale.set(1);
             card.interactive = true;
             this.originalParent.addChild(card);
+            this.cardContainer.removeChild(card);
         }
 
         this.overlay!.visible = false;
@@ -77,7 +89,7 @@ export default class ChoiceScreen {
         this.app!.stage.interactive = true;
     }
 
-    protected createButtons(cardName: string): void {
+    protected createButtons(): void {
         const buttonStyle = new PIXI.TextStyle({
             fontSize: 50,
             fill: "#ffffff",
@@ -114,7 +126,7 @@ export default class ChoiceScreen {
         });
 
         this.pickButton.on("pointerdown", () => {
-            this.onPick?.(cardName);
+            this.onPick?.(this.cardName);
             this.hide();
         });
 
@@ -144,7 +156,7 @@ export default class ChoiceScreen {
         });
 
         this.fightButton.on("pointerdown", () => {
-            this.onFight?.(cardName);
+            this.onFight?.(this.cardName);
             this.hide();
         });
 

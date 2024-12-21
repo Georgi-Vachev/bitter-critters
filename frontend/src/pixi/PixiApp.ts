@@ -2,6 +2,7 @@ import * as PIXI from "pixi.js";
 import axios from "axios";
 import Card from "./pixiComponents/Card";
 import ChoiceScreen from "./pixiComponents/ChoiceScreen";
+import PickArea from "./pixiComponents/PicksArea";
 
 const POKEAPI_URLS = Array.from({ length: 30 }, (_, i) => `https://pokeapi.co/api/v2/pokemon/${i + 1}/`);
 
@@ -17,124 +18,129 @@ const cardMarginPortrait = 22
 const cardMarginLandscape = 50
 
 export default class PixiApp {
-    protected app: PIXI.Application | null = null;
-    protected cardsInfo: Array<any> = [];
-    protected cards: Array<PIXI.Container> = [];
-    protected scrollOffset: number = 0;
-    protected maxScroll: number = 0;
-    protected isDragging: boolean = false;
-    protected dragStartY: number = 0;
-    protected cardsContainer: PIXI.Container | null = null;
-    protected choiceScreen: ChoiceScreen;
+    protected _app: PIXI.Application | null = null;
+    protected _cardsInfo: Array<any> = [];
+    protected _cards: Array<PIXI.Container> = [];
+    protected _scrollOffset: number = 0;
+    protected _maxScroll: number = 0;
+    protected _isDragging: boolean = false;
+    protected _dragStartY: number = 0;
+    protected _cardsContainer: PIXI.Container | null = null;
+    protected _choiceScreen: ChoiceScreen;
+    protected _arena!: PickArea;
+    protected _pickedCard!: PIXI.Container
+    protected _fightCard!: PIXI.Container
 
     constructor() {
-        this.app = new PIXI.Application();
-        this.choiceScreen = new ChoiceScreen(this.app);
+        this._app = new PIXI.Application();
+        this._choiceScreen = new ChoiceScreen(this._app);
     }
 
     public async init(options: { width: number; height: number; backgroundColor: number }): Promise<void> {
-        if (!this.app) throw new Error('PIXI Application instance is not initialized.');
-        await this.app.init(options);
+        if (!this._app) throw new Error('PIXI Application instance is not initialized.');
+        await this._app.init(options);
 
-        (globalThis as any).__PIXI_APP__ = this.app;
+        (globalThis as any).__PIXI_APP__ = this._app;
 
         window.addEventListener("resize", this.resizeCanvas.bind(this));
 
-        this.app.stage.interactive = true;
-        this.app.stage.hitArea = new PIXI.Rectangle(0, 0, this.app.renderer.width, this.app.renderer.height);
+        this._app.stage.interactive = true;
+        this._app.stage.hitArea = new PIXI.Rectangle(0, 0, this._app.renderer.width, this._app.renderer.height);
 
-        this.app.stage.on("pointerdown", this.onDragStart.bind(this));
-        this.app.stage.on("pointermove", this.onDragMove.bind(this));
-        this.app.stage.on("pointerup", this.onDragEnd.bind(this));
-        this.app.stage.on("pointerupoutside", this.onDragEnd.bind(this));
+        this._app.stage.on("pointerdown", this.onDragStart.bind(this));
+        this._app.stage.on("pointermove", this.onDragMove.bind(this));
+        this._app.stage.on("pointerup", this.onDragEnd.bind(this));
+        this._app.stage.on("pointerupoutside", this.onDragEnd.bind(this));
 
-        this.app.stage.on("wheel", (event: WheelEvent) => {
+        this._app.stage.on("wheel", (event: WheelEvent) => {
             this.handleScroll(event);
         });
 
-        canvas = this.app.canvas;
+        canvas = this._app.canvas;
 
         this.resizeCanvas();
         this.addCards();
+
+        this._arena = new PickArea(this._app.stage, this._app.renderer.width, this._app.renderer.height);
     }
 
     public attach(container: HTMLDivElement | null): void {
-        if (!this.app) throw new Error('PIXI Application instance is not initialized.');
-        if (container && !container.contains(this.app.canvas)) {
-            container.appendChild(this.app.canvas);
+        if (!this._app) throw new Error('PIXI Application instance is not initialized.');
+        if (container && !container.contains(this._app.canvas)) {
+            container.appendChild(this._app.canvas);
         }
     }
 
     public detach(container: HTMLDivElement | null): void {
-        if (!this.app) throw new Error('PIXI Application instance is not initialized.');
-        if (container && container.contains(this.app.canvas)) {
-            container.removeChild(this.app.canvas);
+        if (!this._app) throw new Error('PIXI Application instance is not initialized.');
+        if (container && container.contains(this._app.canvas)) {
+            container.removeChild(this._app.canvas);
         }
     }
 
     public destroy(): void {
-        if (this.app) {
-            this.app.destroy(true, { children: true });
-            this.app = null;
+        if (this._app) {
+            this._app.destroy(true, { children: true });
+            this._app = null;
         }
     }
 
     protected onDragStart(event: PIXI.FederatedPointerEvent): void {
-        this.isDragging = true;
-        this.dragStartY = event.data.global.y;
+        this._isDragging = true;
+        this._dragStartY = event.data.global.y;
     }
 
     protected onDragMove(event: PIXI.FederatedPointerEvent): void {
-        if (!this.isDragging || !this.cardsContainer) return;
+        if (!this._isDragging || !this._cardsContainer) return;
 
         const currentY = event.data.global.y;
-        const deltaY = currentY - this.dragStartY;
+        const deltaY = currentY - this._dragStartY;
 
-        this.dragStartY = currentY;
+        this._dragStartY = currentY;
 
-        this.scrollOffset = Math.min(Math.max(this.scrollOffset - deltaY, 0), this.maxScroll);
+        this._scrollOffset = Math.min(Math.max(this._scrollOffset - deltaY, 0), this._maxScroll);
 
-        this.cardsContainer.y = -this.scrollOffset;
+        this._cardsContainer.y = -this._scrollOffset;
     }
 
     protected onDragEnd(): void {
-        this.isDragging = false;
+        this._isDragging = false;
     }
 
     protected handleScroll(event: WheelEvent): void {
         const deltaY = event.deltaY;
         const scrollSpeed = 4;
 
-        this.scrollOffset += deltaY * scrollSpeed;
-        this.scrollOffset = Math.min(Math.max(this.scrollOffset, 0), this.maxScroll);
+        this._scrollOffset += deltaY * scrollSpeed;
+        this._scrollOffset = Math.min(Math.max(this._scrollOffset, 0), this._maxScroll);
 
-        if (this.cardsContainer) {
-            this.cardsContainer.y = -this.scrollOffset;
+        if (this._cardsContainer) {
+            this._cardsContainer.y = -this._scrollOffset;
         }
     }
 
     protected resizeCanvas = () => {
-        if (!this.app) return;
+        if (!this._app) return;
 
         const isPortrait = window.innerHeight > window.innerWidth;
 
         if (isPortrait) {
-            this.app.renderer.resize(portraitWidth, portraitHeight);
+            this._app.renderer.resize(portraitWidth, portraitHeight);
         } else {
-            this.app.renderer.resize(landscapeWidth, landscapeHeight);
+            this._app.renderer.resize(landscapeWidth, landscapeHeight);
         }
 
-        const scaleX = (window.innerWidth / 1.1) / this.app.renderer.width;
-        const scaleY = (window.innerHeight / 1.1) / this.app.renderer.height;
+        const scaleX = (window.innerWidth / 1.1) / this._app.renderer.width;
+        const scaleY = (window.innerHeight / 1.1) / this._app.renderer.height;
         const scale = Math.min(scaleX, scaleY);
 
-        canvas.style.width = `${this.app.renderer.width * scale}px`;
-        canvas.style.height = `${this.app.renderer.height * scale}px`;
+        canvas.style.width = `${this._app.renderer.width * scale}px`;
+        canvas.style.height = `${this._app.renderer.height * scale}px`;
     };
 
     protected addCards() {
-        this.cardsContainer = new PIXI.Container();
-        this.app?.stage.addChild(this.cardsContainer);
+        this._cardsContainer = new PIXI.Container();
+        this._app?.stage.addChild(this._cardsContainer);
 
         this.fetchCardsInfo().then(() => {
             this.createCards();
@@ -162,7 +168,7 @@ export default class PixiApp {
                 abilities: cardData.abilities.map((ability: any) => ability.ability.name),
                 moves: cardData.moves.map((move: any) => move.move.name),
             }));
-            this.cardsInfo.push(...cardsData);
+            this._cardsInfo.push(...cardsData);
         } catch (error) {
             console.error("Error fetching Pokémon data:", error);
         }
@@ -172,19 +178,19 @@ export default class PixiApp {
         const isPortrait = window.innerHeight > window.innerWidth;
         const margin = isPortrait ? cardMarginPortrait : cardMarginLandscape;
 
-        const rows = Math.ceil(this.cards.length / Math.floor((isPortrait ? portraitWidth : landscapeWidth) / (cardWidth + margin)));
+        const rows = Math.ceil(this._cards.length / Math.floor((isPortrait ? portraitWidth : landscapeWidth) / (cardWidth + margin)));
         const totalHeight = rows * (cardHeight + margin);
 
         const visibleHeight = isPortrait ? portraitHeight : landscapeHeight;
 
-        this.maxScroll = Math.max(0, totalHeight - visibleHeight + margin);
+        this._maxScroll = Math.max(0, totalHeight - visibleHeight + margin);
     }
 
     protected createCards() {
-        this.cardsInfo.forEach((cardData) => {
+        this._cardsInfo.forEach((cardData) => {
             const card = new Card(cardData, cardWidth, cardHeight);
-            this.cardsContainer?.addChild(card);
-            this.cards.push(card);
+            this._cardsContainer?.addChild(card);
+            this._cards.push(card);
 
             card.interactive = true;
 
@@ -192,16 +198,18 @@ export default class PixiApp {
                 card.interactive = false;
                 card.tint = 0xffffff;
                 card.scale.set(Card.CARD_IDLE_SCALE)
-                this.app!.stage.interactive = false;
+                this._app!.stage.interactive = false;
 
-                this.choiceScreen.show(
+                this._choiceScreen.show(
                     card,
                     cardData.name,
                     (name: string) => {
                         console.log(`Picked: ${name}`);
+                        this._arena.addCreature(card.cardTexture, "left");
                     },
                     (name: string) => {
                         console.log(`Fight with: ${name}`);
+                        this._arena.addCreature(card.cardTexture, "right");
                     }
                 );
             });
@@ -215,7 +223,7 @@ export default class PixiApp {
         let x = margin;
         let y = margin;
 
-        this.cards.forEach((card) => {
+        this._cards.forEach((card) => {
             card.position.set(x + card.width / 2, y + card.height / 2);
 
             x += cardWidth + margin;
@@ -225,8 +233,8 @@ export default class PixiApp {
             }
         });
 
-        if (this.cardsContainer) {
-            this.cardsContainer.y = 0;
+        if (this._cardsContainer) {
+            this._cardsContainer.y = 0;
         }
     }
 }
