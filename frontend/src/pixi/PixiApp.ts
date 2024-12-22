@@ -26,14 +26,13 @@ export default class PixiApp {
     protected _isDragging: boolean = false;
     protected _dragStartY: number = 0;
     protected _cardsContainer: PIXI.Container | null = null;
-    protected _choiceScreen: ChoiceScreen;
+    protected _choiceScreen!: ChoiceScreen;
     protected _arena!: PickArea;
     protected _pickedCard!: PIXI.Container
     protected _fightCard!: PIXI.Container
 
     constructor() {
         this._app = new PIXI.Application();
-        this._choiceScreen = new ChoiceScreen(this._app);
     }
 
     public async init(options: { width: number; height: number; backgroundColor: number }): Promise<void> {
@@ -61,7 +60,9 @@ export default class PixiApp {
         this.resizeCanvas();
         this.addCards();
 
-        this._arena = new PickArea(this._app.stage, this._app.renderer.width, this._app.renderer.height);
+        this._arena = new PickArea(this._app.renderer.width, this._app.renderer.height);
+        this._choiceScreen = new ChoiceScreen(this._app);
+        this._app.stage.addChild(this._arena, this._choiceScreen)
     }
 
     public attach(container: HTMLDivElement | null): void {

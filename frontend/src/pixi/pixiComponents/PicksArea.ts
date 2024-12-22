@@ -1,7 +1,6 @@
 import * as PIXI from "pixi.js";
 
-export default class PickArea {
-    protected _container: PIXI.Container;
+export default class PickArea extends PIXI.Container {
     protected _background: PIXI.Graphics;
     protected _text: PIXI.Text;
     protected _leftCreature: PIXI.Sprite | null = null;
@@ -9,13 +8,12 @@ export default class PickArea {
     protected _appWidth: number;
     protected _appHeight: number;
 
-    constructor(stage: PIXI.Container, appWidth: number, appHeight: number) {
-        this._container = new PIXI.Container();
+    constructor(appWidth: number, appHeight: number) {
+        super()
         this._appWidth = appWidth;
         this._appHeight = appHeight;
-        this._container.width = appWidth;
-        this._container.height = 100;
-        stage.addChild(this._container);
+        this.width = appWidth;
+        this.height = 100;
 
         const backgroundWidth = appWidth * 0.3
         const backgroundHeight = 200
@@ -44,7 +42,7 @@ export default class PickArea {
         );
         this._background.endFill();
 
-        this._container.addChild(this._background);
+        this.addChild(this._background);
 
         this._text = new PIXI.Text("Take your pick", {
             fontSize: 70,

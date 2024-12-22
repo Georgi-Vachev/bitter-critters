@@ -1,12 +1,12 @@
 import * as PIXI from "pixi.js";
 import { gsap } from "gsap";
 
-export default class ChoiceScreen {
+export default class ChoiceScreen extends PIXI.Container {
     static readonly BUTTON_HEIGHT = 100;
 
     protected _app: PIXI.Application;
-    protected _overlay: PIXI.Graphics | null = null;
-    protected _cardContainer: PIXI.Container | null = null;
+    protected _overlay!: PIXI.Graphics;
+    protected _cardContainer!: PIXI.Container;
     protected _pickButton: PIXI.Container | null = null;
     protected _fightButton: PIXI.Container | null = null;
     protected _originalParent: PIXI.Container | null = null;
@@ -16,6 +16,7 @@ export default class ChoiceScreen {
     protected _onFight: ((name: string) => void) | null = null;
 
     constructor(app: PIXI.Application) {
+        super()
         this._app = app;
     }
 
@@ -27,27 +28,25 @@ export default class ChoiceScreen {
         this._originalPosition = { x: card.x, y: card.y };
         this._originalParent?.removeChild(card);
         this._cardName = _cardName;
+        card.pivot.set(card.width / 2, card.height / 2);
 
-        if (this._overlay) {
-            this._overlay.visible = true
-        } else {
+        if (!this._overlay || !this._cardContainer) {
             this._overlay = new PIXI.Graphics();
+            this._cardContainer = new PIXI.Container();
+
             this._overlay.rect(0, 0, this._app.renderer.width, this._app.renderer.height);
             this._overlay.fill(0x000000, 0.5);
             this._overlay.interactive = true;
-            this._app.stage.addChild(this._overlay);
 
             this._overlay.on("pointerdown", () => {
-                card.interactive = true;
                 this.hide();
             });
+
+            this._overlay.addChild(this._cardContainer);
+            this.addChild(this._overlay);
         }
 
-        card.pivot.set(card.width / 2, card.height / 2);
-
-        this._cardContainer = new PIXI.Container();
-        this._overlay.addChild(this._cardContainer);
-
+        this._overlay.visible = true;
         this._cardContainer.addChild(card);
 
         const cardProps = { x: card.x, y: card.y, scaleX: card.scale.x, scaleY: card.scale.y };
@@ -130,7 +129,7 @@ export default class ChoiceScreen {
             this.hide();
         });
 
-        this._app.stage.addChild(this._pickButton);
+        this.addChild(this._pickButton);
 
         this._fightButton = new PIXI.Container();
         const fightButtonBackground = new PIXI.Graphics();
@@ -160,6 +159,6 @@ export default class ChoiceScreen {
             this.hide();
         });
 
-        this._app.stage.addChild(this._fightButton);
+        this.addChild(this._fightButton);
     }
 }
