@@ -29,7 +29,7 @@ export default class CardsTable extends PIXI.Container {
     public async init(): Promise<void> {
         await this.fetchCardsInfo();
         this.createCards();
-        this.positionCards();
+        this.adjustPosition();
         this.calculateMaxScroll();
     }
 
@@ -68,7 +68,7 @@ export default class CardsTable extends PIXI.Container {
         });
     }
 
-    public positionCards() {
+    public adjustPosition() {
         const isPortrait = window.innerHeight > window.innerWidth;
         const margin = isPortrait ? 22 : 50;
         const cardWidth = 450;

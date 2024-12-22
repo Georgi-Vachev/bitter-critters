@@ -12,6 +12,7 @@ export default class ChoiceScreen extends PIXI.Container {
     protected _originalParent: PIXI.Container | null = null;
     protected _originalPosition: { x: number; y: number } | null = null;
     protected _cardName: string = "";
+    protected _currentCard: PIXI.Container | null = null;
     protected _onPick: ((name: string) => void) | null = null;
     protected _onFight: ((name: string) => void) | null = null;
 
@@ -19,6 +20,32 @@ export default class ChoiceScreen extends PIXI.Container {
         super()
         this._app = app;
     }
+
+    public adjustPosition(): void {
+        if (!this._overlay || !this._cardContainer) {
+            return;
+        }
+
+        this._overlay.clear();
+        this._overlay.rect(0, 0, this._app.renderer.width, this._app.renderer.height);
+        this._overlay.fill(0x000000, 0.5);
+
+        if (this._cardContainer.children.length > 0) {
+            const card = this._cardContainer.children[0];
+            card.position.set(this._app.renderer.width / 2, this._app.renderer.height / 2 - ChoiceScreen.BUTTON_HEIGHT / 2);
+        }
+
+        this._pickButton?.position.set(
+            this._app.renderer.width / 2 - this._pickButton.width,
+            (this._app.renderer.height + this._currentCard!.height) / 2
+        );
+
+        this._fightButton?.position.set(
+            this._app.renderer.width / 2,
+            (this._app.renderer.height + this._currentCard!.height) / 2
+        );
+    }
+
 
     public show(card: PIXI.Container, _cardName: string, onPick: (name: string) => void, onFight: (name: string) => void): void {
         this._onPick = onPick;
@@ -28,6 +55,7 @@ export default class ChoiceScreen extends PIXI.Container {
         this._originalPosition = { x: card.x, y: card.y };
         this._originalParent?.removeChild(card);
         this._cardName = _cardName;
+        this._currentCard = card;
         card.pivot.set(card.width / 2, card.height / 2);
 
         if (!this._overlay || !this._cardContainer) {
@@ -63,6 +91,7 @@ export default class ChoiceScreen extends PIXI.Container {
             },
             onComplete: () => {
                 if (this._pickButton && this._fightButton) {
+                    this.adjustPosition();
                     this._pickButton.visible = true;
                     this._fightButton.visible = true;
                 } else {
@@ -114,7 +143,7 @@ export default class ChoiceScreen extends PIXI.Container {
 
         this._pickButton.interactive = true;
         this._pickButton.cursor = "pointer";
-        this._pickButton.position.set(this._app.renderer.width / 2 - buttonWidth, this._app.renderer.height - 180);
+        this._pickButton.position.set(this._app.renderer.width / 2 - buttonWidth, (this._app.renderer.height + this._currentCard!.height) / 2);
 
         this._pickButton.on("pointerover", () => {
             console.error('pointerover')
@@ -145,7 +174,7 @@ export default class ChoiceScreen extends PIXI.Container {
 
         this._fightButton.interactive = true;
         this._fightButton.cursor = "pointer";
-        this._fightButton.position.set(this._app.renderer.width / 2, this._app.renderer.height - 180);
+        this._fightButton.position.set(this._app.renderer.width / 2, (this._app.renderer.height + this._currentCard!.height) / 2);
 
         this._fightButton.on("pointerover", () => {
             fightButtonBackground.tint = 0xff0000;

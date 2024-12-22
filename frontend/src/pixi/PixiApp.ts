@@ -75,7 +75,8 @@ export default class PixiApp {
         }
 
         if ((this._orientation === "landscape" && isPortrait) || (this._orientation === "portrait" && !isPortrait)) {
-            this._cardsTable?.positionCards();
+            this._cardsTable?.adjustPosition();
+            this._choiceScreen?.adjustPosition();
         }
 
         const scaleX = (window.innerWidth / 1.1) / this._app.renderer.width;
