@@ -38,7 +38,7 @@ export default class PixiApp {
         this._cardsTable = new CardsTable(this._app, this.onCardPick.bind(this));
         await this._cardsTable.init();
 
-        this._app.stage.addChild(this._arena, this._choiceScreen);
+        this._app.stage.addChild(this._cardsTable, this._arena, this._choiceScreen);
     }
 
     public attach(container: HTMLDivElement | null): void {

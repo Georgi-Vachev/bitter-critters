@@ -4,8 +4,7 @@ import Card from "./Card";
 
 const POKEAPI_URLS = Array.from({ length: 30 }, (_, i) => `https://pokeapi.co/api/v2/pokemon/${i + 1}/`);
 
-export default class CardsTable {
-    protected _cardsContainer: PIXI.Container;
+export default class CardsTable extends PIXI.Container {
     protected _cards: Array<PIXI.Container> = [];
     protected _cardsInfo: Array<any> = [];
     protected _scrollOffset: number = 0;
@@ -16,11 +15,10 @@ export default class CardsTable {
     protected _onCardPick: (card: Card, cardData: any) => void;
 
     constructor(app: PIXI.Application, onCardPick: (card: Card, cardData: any) => void) {
+        super()
         this._app = app;
         this._onCardPick = onCardPick;
-        this._cardsContainer = new PIXI.Container();
 
-        this._app.stage.addChild(this._cardsContainer);
         this._app.stage.on("pointerdown", this.onDragStart.bind(this));
         this._app.stage.on("pointermove", this.onDragMove.bind(this));
         this._app.stage.on("pointerup", this.onDragEnd.bind(this));
@@ -62,7 +60,7 @@ export default class CardsTable {
     protected createCards() {
         this._cardsInfo.forEach((cardData) => {
             const card = new Card(cardData, 450, 580);
-            this._cardsContainer.addChild(card);
+            this.addChild(card);
             this._cards.push(card);
 
             card.interactive = true;
@@ -91,7 +89,7 @@ export default class CardsTable {
             }
         });
 
-        this._cardsContainer.y = 0;
+        this.y = 0;
     }
 
     protected calculateMaxScroll() {
@@ -125,7 +123,7 @@ export default class CardsTable {
         this._dragStartY = currentY;
 
         this._scrollOffset = Math.min(Math.max(this._scrollOffset - deltaY, 0), this._maxScroll);
-        this._cardsContainer.y = -this._scrollOffset;
+        this.y = -this._scrollOffset;
     }
 
     protected onDragEnd(): void {
@@ -139,6 +137,6 @@ export default class CardsTable {
         this._scrollOffset += deltaY * scrollSpeed;
         this._scrollOffset = Math.min(Math.max(this._scrollOffset, 0), this._maxScroll);
 
-        this._cardsContainer.y = -this._scrollOffset;
+        this.y = -this._scrollOffset;
     }
 }
