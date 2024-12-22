@@ -14,6 +14,7 @@ export default class PixiApp {
     protected _cardsTable!: CardsTable;
     protected _choiceScreen!: ChoiceScreen;
     protected _arena!: PickArea;
+    protected _orientation: "landscape" | "portrait" = "landscape";
 
     constructor() {
         this._app = new PIXI.Application();
@@ -73,12 +74,18 @@ export default class PixiApp {
             this._app.renderer.resize(landscapeWidth, landscapeHeight);
         }
 
+        if ((this._orientation === "landscape" && isPortrait) || (this._orientation === "portrait" && !isPortrait)) {
+            this._cardsTable?.positionCards();
+        }
+
         const scaleX = (window.innerWidth / 1.1) / this._app.renderer.width;
         const scaleY = (window.innerHeight / 1.1) / this._app.renderer.height;
         const scale = Math.min(scaleX, scaleY);
 
         this._app.view.style.width = `${this._app.renderer.width * scale}px`;
         this._app.view.style.height = `${this._app.renderer.height * scale}px`;
+
+        this._orientation = isPortrait ? "portrait" : "landscape";
     };
 
     protected onCardPick(card: Card, cardData: any): void {
