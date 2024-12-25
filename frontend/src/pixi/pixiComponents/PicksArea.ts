@@ -130,12 +130,12 @@ export default class PickArea extends PIXI.Container {
             sprite.scale.x *= -1;
             this._leftButtons = this.createCreatureButtons(position);
             this._background.removeChild(this._leftRandomButton);
-            this.addChild(this._leftButtons);
+            this._background.addChild(this._leftButtons);
         } else {
             this._rightCreature = sprite;
             this._rightButtons = this.createCreatureButtons(position);
             this._background.removeChild(this._rightRandomButton);
-            this.addChild(this._rightButtons);
+            this._background.addChild(this._rightButtons);
         }
 
         if (this._leftCreature && this._rightCreature) {
@@ -154,8 +154,17 @@ export default class PickArea extends PIXI.Container {
 
         xButton.position.set(buttonPosX, (this._appHeight - this._background.height / 2) - xButton.height);
         xButton.on("pointerdown", () => {
-            if (position === "left") this._leftCreature = null;
-            else this._rightCreature = null;
+            if (position === "left" && this._leftCreature && this._leftButtons) {
+                this._background.removeChild(this._leftCreature, this._leftButtons);
+                this._background.addChild(this._leftRandomButton);
+                this._leftCreature = null
+            }
+            else if (this._rightCreature && this._rightButtons) {
+                this._background.removeChild(this._rightCreature, this._rightButtons);
+                this._background.addChild(this._rightRandomButton);
+                this._rightCreature = null
+            };
+
             this.updateCreatureDisplay();
         });
 
@@ -171,7 +180,7 @@ export default class PickArea extends PIXI.Container {
     }
 
     protected updateCreatureDisplay(): void {
-        if (!this._leftCreature && !this._rightCreature) {
+        if (!this._leftCreature || !this._rightCreature) {
             if (!this._text.parent) this._background.addChild(this._text);
         }
 
