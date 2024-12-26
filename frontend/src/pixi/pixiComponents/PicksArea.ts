@@ -1,6 +1,6 @@
 import * as PIXI from "pixi.js";
 
-export default class PickArea extends PIXI.Container {
+export default class PicksArea extends PIXI.Container {
     protected _background: PIXI.Graphics;
     protected _text: PIXI.Text;
     protected _leftCreature: PIXI.Sprite | null = null;
@@ -9,13 +9,15 @@ export default class PickArea extends PIXI.Container {
     protected _rightButtons: PIXI.Container | null = null;
     protected _leftRandomButton!: PIXI.Container;
     protected _rightRandomButton!: PIXI.Container;
+    protected _addRandomCard: (side: "left" | "right") => void;
     protected readonly _appWidth: number;
     protected readonly _appHeight: number;
 
-    constructor(appWidth: number, appHeight: number) {
+    constructor(appWidth: number, appHeight: number, addRandomCard: (side: "left" | "right") => void) {
         super();
         this._appWidth = appWidth;
         this._appHeight = appHeight;
+        this._addRandomCard = addRandomCard;
         this.width = appWidth;
         this.height = 100;
 
@@ -79,7 +81,7 @@ export default class PickArea extends PIXI.Container {
             this._appHeight - this._background.height / 2 - this._leftRandomButton.height / 2
         );
         this._leftRandomButton.on("pointerdown", () => {
-            console.log("Choose a random left creature!");
+            this._addRandomCard("left")
         });
 
         this._rightRandomButton = this.createActionBox(0xebcd34, "?", 100);
@@ -88,7 +90,7 @@ export default class PickArea extends PIXI.Container {
             this._appHeight - this._background.height / 2 - this._rightRandomButton.height / 2
         );
         this._rightRandomButton.on("pointerdown", () => {
-            console.log("Choose a random right creature!");
+            this._addRandomCard("right")
         });
 
         this._background.addChild(this._leftRandomButton, this._rightRandomButton);
@@ -117,7 +119,7 @@ export default class PickArea extends PIXI.Container {
         return box;
     }
 
-    public addCreature(creatureTexture: PIXI.Texture, position: "left" | "right"): void {
+    public addCard(creatureTexture: PIXI.Texture, position: "left" | "right"): void {
         const isLeft = position === "left";
 
         const oldCreature = isLeft ? this._leftCreature : this._rightCreature;
@@ -164,7 +166,7 @@ export default class PickArea extends PIXI.Container {
         );
         xButton.on("pointerdown", () => this.removeCreature(position));
 
-        const questionButton = this.createActionBox(0xffff00, "?", 50);
+        const questionButton = this.createActionBox(0xebcd34, "?", 50);
         questionButton.position.set(
             position === "left"
                 ? this._appWidth / 2 - this._background.width / 2 + questionButton.width / 2
@@ -172,7 +174,7 @@ export default class PickArea extends PIXI.Container {
             this._appHeight - this._background.height / 2 + questionButton.height / 2
         );
         questionButton.on("pointerdown", () => {
-            console.log(`Choose a random ${position} creature!`);
+            this._addRandomCard(position);
         });
 
         container.addChild(xButton, questionButton);

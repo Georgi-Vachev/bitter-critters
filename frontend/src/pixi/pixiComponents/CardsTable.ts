@@ -5,7 +5,7 @@ import Card from "./Card";
 const POKEAPI_URLS = Array.from({ length: 30 }, (_, i) => `https://pokeapi.co/api/v2/pokemon/${i + 1}/`);
 
 export default class CardsTable extends PIXI.Container {
-    protected _cards: Array<PIXI.Container> = [];
+    protected _cards: Array<Card> = [];
     protected _cardsInfo: Array<any> = [];
     protected _scrollOffset: number = 0;
     protected _maxScroll: number = 0;
@@ -13,6 +13,10 @@ export default class CardsTable extends PIXI.Container {
     protected _dragStartY: number = 0;
     protected _app: PIXI.Application;
     protected _onCardPick: (card: Card, cardData: any) => void;
+
+    get cards(): Array<Card> {
+        return this._cards;
+    }
 
     constructor(app: PIXI.Application, onCardPick: (card: Card, cardData: any) => void) {
         super()

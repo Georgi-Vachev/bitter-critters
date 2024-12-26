@@ -1,7 +1,7 @@
 import * as PIXI from "pixi.js";
 import CardsTable from "./pixiComponents/CardsTable";
 import ChoiceScreen from "./pixiComponents/ChoiceScreen";
-import PickArea from "./pixiComponents/PicksArea";
+import PicksArea from "./pixiComponents/PicksArea";
 import Card from "./pixiComponents/Card";
 
 const landscapeWidth = 2560;
@@ -13,7 +13,7 @@ export default class PixiApp {
     protected _app: PIXI.Application | null = null;
     protected _cardsTable!: CardsTable;
     protected _choiceScreen!: ChoiceScreen;
-    protected _arena!: PickArea;
+    protected _picksArea!: PicksArea;
     protected _orientation: "landscape" | "portrait" = "landscape";
 
     constructor() {
@@ -33,13 +33,13 @@ export default class PixiApp {
 
         this.resizeCanvas();
 
-        this._arena = new PickArea(this._app.renderer.width, this._app.renderer.height);
-        this._choiceScreen = new ChoiceScreen(this._app);
-
         this._cardsTable = new CardsTable(this._app, this.onCardPick.bind(this));
         await this._cardsTable.init();
 
-        this._app.stage.addChild(this._cardsTable, this._arena, this._choiceScreen);
+        this._picksArea = new PicksArea(this._app.renderer.width, this._app.renderer.height, this.addRandomCard.bind(this));
+        this._choiceScreen = new ChoiceScreen(this._app);
+
+        this._app.stage.addChild(this._cardsTable, this._picksArea, this._choiceScreen);
     }
 
     public attach(container: HTMLDivElement | null): void {
@@ -77,6 +77,7 @@ export default class PixiApp {
         if ((this._orientation === "landscape" && isPortrait) || (this._orientation === "portrait" && !isPortrait)) {
             this._cardsTable?.adjustPosition();
             this._choiceScreen?.adjustPosition();
+            // Add picks area adjustment
         }
 
         const scaleX = (window.innerWidth / 1.1) / this._app.renderer.width;
@@ -100,12 +101,18 @@ export default class PixiApp {
             cardData.name,
             (name: string) => {
                 console.log(`Picked: ${name}`);
-                this._arena.addCreature(card.cardTexture, "left");
+                this._picksArea.addCard(card.cardTexture, "left");
             },
             (name: string) => {
                 console.log(`Fight with: ${name}`);
-                this._arena.addCreature(card.cardTexture, "right");
+                this._picksArea.addCard(card.cardTexture, "right");
             }
         );
+    }
+
+    protected addRandomCard(side: "left" | "right"): void {
+        const card = this._cardsTable.cards[Math.floor(Math.random() * this._cardsTable.cards.length)];
+
+        this._picksArea.addCard(card.cardTexture, side);
     }
 }
