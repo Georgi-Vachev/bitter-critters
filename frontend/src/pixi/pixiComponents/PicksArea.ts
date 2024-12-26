@@ -1,14 +1,16 @@
 import * as PIXI from "pixi.js";
+import { gsap } from "gsap";
 
 export default class PicksArea extends PIXI.Container {
-    protected _background: PIXI.Graphics;
-    protected _text: PIXI.Text;
+    protected _background!: PIXI.Graphics;
+    protected _text!: PIXI.Text;
     protected _leftCreature: PIXI.Sprite | null = null;
     protected _rightCreature: PIXI.Sprite | null = null;
     protected _leftButtons: PIXI.Container | null = null;
     protected _rightButtons: PIXI.Container | null = null;
     protected _leftRandomButton!: PIXI.Container;
     protected _rightRandomButton!: PIXI.Container;
+    protected _battleButton!: PIXI.Container;
     protected _addRandomCard: (side: "left" | "right") => void;
     protected readonly _appWidth: number;
     protected readonly _appHeight: number;
@@ -17,48 +19,47 @@ export default class PicksArea extends PIXI.Container {
         super();
         this._appWidth = appWidth;
         this._appHeight = appHeight;
-        this._addRandomCard = addRandomCard;
         this.width = appWidth;
         this.height = 100;
 
-        this._background = this.createBackground();
-        this.addChild(this._background);
+        this._addRandomCard = addRandomCard;
 
-        this._text = this.createText();
-        this._background.addChild(this._text);
-
+        this.createBackground();
         this.createPlaceholderButtons();
+        this.createBattleButton();
     }
 
-    protected createBackground(): PIXI.Graphics {
+    protected createBackground(): void {
         const backgroundWidth = this._appWidth * 0.4;
         const backgroundHeight = 220;
         const backgroundX = this._appWidth / 2 - backgroundWidth / 2;
         const backgroundY = this._appHeight - backgroundHeight;
         const cornerRadius = 45;
 
-        const background = new PIXI.Graphics();
-        background.beginFill(0x777777);
-        background.moveTo(backgroundX + cornerRadius, backgroundY);
-        background.lineTo(backgroundX + backgroundWidth - cornerRadius, backgroundY);
-        background.quadraticCurveTo(
+        this._background = new PIXI.Graphics();
+        this._background.moveTo(backgroundX + cornerRadius, backgroundY);
+        this._background.lineTo(backgroundX + backgroundWidth - cornerRadius, backgroundY);
+        this._background.quadraticCurveTo(
             backgroundX + backgroundWidth,
             backgroundY,
             backgroundX + backgroundWidth,
             backgroundY + cornerRadius
         );
-        background.lineTo(backgroundX + backgroundWidth, backgroundY + backgroundHeight);
-        background.lineTo(backgroundX, backgroundY + backgroundHeight);
-        background.lineTo(backgroundX, backgroundY + cornerRadius);
-        background.quadraticCurveTo(
+        this._background.lineTo(backgroundX + backgroundWidth, backgroundY + backgroundHeight);
+        this._background.lineTo(backgroundX, backgroundY + backgroundHeight);
+        this._background.lineTo(backgroundX, backgroundY + cornerRadius);
+        this._background.quadraticCurveTo(
             backgroundX,
             backgroundY,
             backgroundX + cornerRadius,
             backgroundY
         );
-        background.endFill();
+        this._background.fill(0x777777);
 
-        return background;
+        this._text = this.createText();
+        this._background.addChild(this._text);
+
+        this.addChild(this._background);
     }
 
     protected createText(): PIXI.Text {
@@ -94,6 +95,98 @@ export default class PicksArea extends PIXI.Container {
         });
 
         this._background.addChild(this._leftRandomButton, this._rightRandomButton);
+    }
+
+    protected createBattleButton(): void {
+        this._battleButton = new PIXI.Container();
+
+        const buttonBackground = new PIXI.Graphics();
+        buttonBackground.lineStyle(4, 0x264a37, 0.2);
+        buttonBackground.beginFill(0xffffff);
+        buttonBackground.roundRect(0, 0, 360, 100, 25);
+        buttonBackground.endFill();
+        this._battleButton.addChild(buttonBackground);
+
+        const buttonText = new PIXI.Text("Battle!", {
+            fontSize: 50,
+            fontWeight: "bold",
+            fill: "white",
+            align: "center",
+            fontFamily: "Comic Sans MS, Verdana, Futura",
+        });
+
+        buttonText.anchor.set(0.5);
+        buttonText.position.set(buttonBackground.width / 2, buttonBackground.height / 2);
+        this._battleButton.addChild(buttonText);
+
+        this._battleButton.interactive = true;
+        this._battleButton.cursor = "pointer";
+
+        this._battleButton.position.set(
+            this._appWidth / 2,
+            (this._appHeight - this._background.height / 2)
+        );
+
+        this._battleButton.pivot.set(buttonBackground.width / 2, buttonBackground.height / 2);
+
+        let isHovered = false;
+
+        this._battleButton.on("pointerover", () => {
+            isHovered = true;
+            gsap.to(this._battleButton.scale, {
+                x: 1.1,
+                y: 1.1,
+                duration: 0.1,
+            });
+        });
+
+        this._battleButton.on("pointerout", () => {
+            isHovered = false;
+            gsap.to(this._battleButton.scale, {
+                x: 1,
+                y: 1,
+                duration: 0.1,
+            });
+        });
+
+        this._battleButton.on("pointerdown", () => {
+            gsap.to(this._battleButton.scale, {
+                x: 0.975,
+                y: 0.975,
+                duration: 0.05,
+            });
+        });
+
+        this._battleButton.on("pointerup", () => {
+            if (isHovered) {
+                gsap.to(this._battleButton.scale, {
+                    x: 1.075,
+                    y: 1.075,
+                    duration: 0.075,
+                });
+            } else {
+                gsap.to(this._battleButton.scale, {
+                    x: 1,
+                    y: 1,
+                    duration: 0.75,
+                });
+            }
+        });
+
+        // const changeColor = () => {
+        //     const randomColor = Math.floor(Math.random() * 16777215); // Random color
+        //     gsap.to(buttonBackground, {
+        //         tint: randomColor,
+        //         duration: 500,
+        //         ease: "power1.inOut",
+        //         onComplete: changeColor
+        //     });
+        // };
+
+        // changeColor();
+
+        this._battleButton.visible = false;
+        this._background.addChild(this._battleButton);
     }
 
     protected createActionBox(color: number, label: string, size: number): PIXI.Container {
@@ -201,8 +294,11 @@ export default class PicksArea extends PIXI.Container {
     protected updateTextVisibility(): void {
         if (!this._leftCreature || !this._rightCreature) {
             if (!this._text.parent) this._background.addChild(this._text);
+            this._battleButton.visible = false;
         } else {
             if (this._text.parent) this._text.parent.removeChild(this._text);
+            this._battleButton.visible = true;
         }
     }
+
 }
