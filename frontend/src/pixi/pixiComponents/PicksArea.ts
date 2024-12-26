@@ -101,10 +101,8 @@ export default class PicksArea extends PIXI.Container {
         this._battleButton = new PIXI.Container();
 
         const buttonBackground = new PIXI.Graphics();
-        buttonBackground.lineStyle(4, 0x264a37, 0.2);
-        buttonBackground.beginFill(0xffffff);
         buttonBackground.roundRect(0, 0, 360, 100, 25);
-        buttonBackground.endFill();
+        buttonBackground.fill(0xffffff);
         this._battleButton.addChild(buttonBackground);
 
         const buttonText = new PIXI.Text("Battle!", {
@@ -173,17 +171,17 @@ export default class PicksArea extends PIXI.Container {
             }
         });
 
-        // const changeColor = () => {
-        //     const randomColor = Math.floor(Math.random() * 16777215); // Random color
-        //     gsap.to(buttonBackground, {
-        //         tint: randomColor,
-        //         duration: 500,
-        //         ease: "power1.inOut",
-        //         onComplete: changeColor
-        //     });
-        // };
+        const changeColor = () => {
+            const color = PIXI.Color.shared.setValue([
+                (Math.sin(Date.now() * 0.0007) + 1) / 2,
+                (Math.sin(Date.now() * 0.0007 + 2) + 1) / 2,
+                (Math.sin(Date.now() * 0.0007 + 4) + 1) / 2,
+            ]).toHex();
+            buttonBackground.tint = color;
+            requestAnimationFrame(changeColor);
+        };
 
-        // changeColor();
+        changeColor();
 
         this._battleButton.visible = false;
         this._background.addChild(this._battleButton);
