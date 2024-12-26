@@ -3,7 +3,7 @@ import { gsap } from "gsap";
 
 export default class PicksArea extends PIXI.Container {
     protected _background!: PIXI.Graphics;
-    protected _text!: PIXI.Text;
+    protected _text!: PIXI.Container;
     protected _leftCreature: PIXI.Sprite | null = null;
     protected _rightCreature: PIXI.Sprite | null = null;
     protected _leftButtons: PIXI.Container | null = null;
@@ -62,15 +62,33 @@ export default class PicksArea extends PIXI.Container {
         this.addChild(this._background);
     }
 
-    protected createText(): PIXI.Text {
-        const text = new PIXI.Text("Make your choice\nor\nroll the dice with '?'", {
-            fontSize: 45,
-            fill: "white",
+    protected createText(): PIXI.Container {
+        const style1 = new PIXI.TextStyle({
+            fontSize: 42,
+            fill: 0xffffff,
             align: "center",
             fontFamily: "Comic Sans MS, Verdana, Futura",
         });
-        text.anchor.set(0.5);
-        text.position.set(this._appWidth / 2, this._appHeight - 220 / 2);
+
+        const style2 = new PIXI.TextStyle({
+            fontSize: 42,
+            fill: 0xebcd34,
+            fontWeight: "bold",
+            align: "center",
+            fontFamily: "Comic Sans MS, Verdana, Futura",
+        });
+
+        const text1 = new PIXI.Text("Make your choice\nor\n", style1);
+        const text2 = new PIXI.Text("Roll the dice with '?'", style2);
+
+        text1.anchor.set(0.5);
+        text2.anchor.set(0.5);
+
+        const text = new PIXI.Container();
+        text.addChild(text1, text2);
+
+        text2.position.set(0, text2.height);
+        text.position.set(this._appWidth / 2, this._appHeight - this._background.height / 2);
 
         return text;
     }
