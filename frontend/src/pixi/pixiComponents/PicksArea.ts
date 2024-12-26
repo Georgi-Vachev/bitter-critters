@@ -76,7 +76,7 @@ export default class PicksArea extends PIXI.Container {
     }
 
     protected createPlaceholderButtons(): void {
-        this._leftRandomButton = this.createActionBox(0xebcd34, "?", 100);
+        this._leftRandomButton = this.createActionBox(0xebcd34, "?", 100, 15);
         this._leftRandomButton.position.set(
             this._appWidth / 2 - this._background.width / 2 + this._leftRandomButton.width / 2,
             this._appHeight - this._background.height / 2 - this._leftRandomButton.height / 2
@@ -85,7 +85,7 @@ export default class PicksArea extends PIXI.Container {
             this._addRandomCard("left")
         });
 
-        this._rightRandomButton = this.createActionBox(0xebcd34, "?", 100);
+        this._rightRandomButton = this.createActionBox(0xebcd34, "?", 100, 15);
         this._rightRandomButton.position.set(
             this._appWidth / 2 + this._background.width / 2 - this._rightRandomButton.width * 1.5,
             this._appHeight - this._background.height / 2 - this._rightRandomButton.height / 2
@@ -187,12 +187,12 @@ export default class PicksArea extends PIXI.Container {
         this._background.addChild(this._battleButton);
     }
 
-    protected createActionBox(color: number, label: string, size: number): PIXI.Container {
+    protected createActionBox(color: number, label: string, size: number, radius: number): PIXI.Container {
         const box = new PIXI.Container();
         const boxGraphics = new PIXI.Graphics();
-        boxGraphics.beginFill(color);
-        boxGraphics.drawRect(0, 0, size, size);
-        boxGraphics.endFill();
+
+        boxGraphics.roundRect(0, 0, size, size);
+        boxGraphics.fill(color);
 
         const boxText = new PIXI.Text(label, {
             fontSize: 50,
@@ -225,8 +225,8 @@ export default class PicksArea extends PIXI.Container {
         creature.height = 200;
         creature.position.set(
             isLeft
-                ? this._appWidth / 2 - creature.width * 1.2
-                : this._appWidth / 2 + creature.width * 1.2,
+                ? this._appWidth / 2 - creature.width * 1.1
+                : this._appWidth / 2 + creature.width * 1.1,
             this._appHeight - 200
         );
 
@@ -248,21 +248,21 @@ export default class PicksArea extends PIXI.Container {
     protected createCreatureButtons(position: "left" | "right"): PIXI.Container {
         const container = new PIXI.Container();
 
-        const xButton = this.createActionBox(0xff0000, "X", 50);
+        const xButton = this.createActionBox(0xff0000, "X", 75, 1);
         xButton.position.set(
             position === "left"
-                ? this._appWidth / 2 - this._background.width / 2 + xButton.width / 2
-                : this._appWidth / 2 + this._background.width / 2 - xButton.width * 1.5,
-            this._appHeight - this._background.height / 2 - xButton.height
+                ? this._appWidth / 2 - this._background.width / 2 + xButton.width / 5
+                : this._appWidth / 2 + this._background.width / 2 - xButton.width * 1.2,
+            (this._appHeight - this._background.height / 2) - xButton.height * 1.25
         );
         xButton.on("pointerdown", () => this.removeCreature(position));
 
-        const questionButton = this.createActionBox(0xebcd34, "?", 50);
+        const questionButton = this.createActionBox(0xebcd34, "?", 75, 1);
         questionButton.position.set(
             position === "left"
-                ? this._appWidth / 2 - this._background.width / 2 + questionButton.width / 2
-                : this._appWidth / 2 + this._background.width / 2 - questionButton.width * 1.5,
-            this._appHeight - this._background.height / 2 + questionButton.height / 2
+                ? this._appWidth / 2 - this._background.width / 2 + questionButton.width / 5
+                : this._appWidth / 2 + this._background.width / 2 - questionButton.width * 1.2,
+            (this._appHeight - this._background.height / 2) + questionButton.height / 3.5
         );
         questionButton.on("pointerdown", () => {
             this._addRandomCard(position);
