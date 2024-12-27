@@ -38,6 +38,16 @@ export default class PicksArea extends PIXI.Container {
         return { left: this._leftCard, right: this._rightCard };
     }
 
+    get chosenCardSprites(): { leftCardSprite: PIXI.Sprite | null; rightCardSprite: PIXI.Sprite | null } {
+        return { leftCardSprite: this._leftCardSprite, rightCardSprite: this._rightCardSprite };
+    }
+
+    public removeChosenCards(): { leftCardSprite: PIXI.Sprite | null; rightCardSprite: PIXI.Sprite | null } {
+        this.removeChild(this._leftCardSprite!, this._rightCardSprite!);
+
+        return { leftCardSprite: this._leftCardSprite, rightCardSprite: this._rightCardSprite };
+    }
+
     public animateIntro(): Promise<void> {
         return new Promise((resolve) => {
             const duration = 1.5;
@@ -52,8 +62,8 @@ export default class PicksArea extends PIXI.Container {
             const rightSpriteProps = { scaleX: this._rightCardSprite!.scale.x, scaleY: this._rightCardSprite!.scale.y, y: this._rightCardSprite!.y, x: this._rightCardSprite!.x };
 
             const leftAnimation = gsap.to(leftSpriteProps, {
-                x: this._appWidth / 2 - this._leftCardSprite!.width,
-                y: this._appHeight / 2 - this._leftCardSprite!.height,
+                x: this._appWidth * 0.3,
+                y: this._appHeight * 0.4 - this._leftCardSprite!.height,
                 scaleX: -6,
                 scaleY: 6,
                 duration: duration,
@@ -61,12 +71,13 @@ export default class PicksArea extends PIXI.Container {
                 onUpdate: () => {
                     this._leftCardSprite!.scale.set(leftSpriteProps.scaleX, leftSpriteProps.scaleY);
                     this._leftCardSprite!.y = leftSpriteProps.y;
+                    this._leftCardSprite!.x = leftSpriteProps.x;
                 }
             });
 
             const rightAnimation = gsap.to(rightSpriteProps, {
-                x: this._appWidth / 2 + this._rightCardSprite!.width,
-                y: this._appHeight / 2 - this._rightCardSprite!.height,
+                x: this._appWidth * 0.7,
+                y: this._appHeight * 0.4 - this._rightCardSprite!.height,
                 scaleX: 6,
                 scaleY: 6,
                 duration: duration,
@@ -74,6 +85,8 @@ export default class PicksArea extends PIXI.Container {
                 onUpdate: () => {
                     this._rightCardSprite!.scale.set(rightSpriteProps.scaleX, rightSpriteProps.scaleY);
                     this._rightCardSprite!.y = rightSpriteProps.y;
+                    this._rightCardSprite!.x = rightSpriteProps.x;
+
                 }
             });
 

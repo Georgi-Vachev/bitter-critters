@@ -125,7 +125,7 @@ export default class PixiApp {
             this._cardsTable.animateIntro()
         ]);
 
-        await this._arena.animateIntro();
+        this._arena.animateIntro();
     }
 
 }
