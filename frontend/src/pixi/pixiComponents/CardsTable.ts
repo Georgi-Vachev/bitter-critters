@@ -1,6 +1,7 @@
 import * as PIXI from "pixi.js";
 import axios from "axios";
 import Card from "./Card";
+import gsap from "gsap";
 
 const POKEAPI_URLS = Array.from({ length: 30 }, (_, i) => `https://pokeapi.co/api/v2/pokemon/${i + 1}/`);
 
@@ -12,6 +13,7 @@ export default class CardsTable extends PIXI.Container {
     protected _isDragging: boolean = false;
     protected _dragStartY: number = 0;
     protected _app: PIXI.Application;
+    protected _cardColumns: Array<Array<Card>> = [];
     protected _onCardPick: (card: Card, cardData: any) => void;
 
     get cards(): Array<Card> {
@@ -35,6 +37,22 @@ export default class CardsTable extends PIXI.Container {
         this.createCards();
         this.adjustPosition();
         this.calculateMaxScroll();
+    }
+
+    public animateIntro() {
+        this._cardColumns.forEach((column, columnIndex) => {
+            const direction = columnIndex % 2 === 0 ? this.height : -this.height;
+            column.forEach((card) => {
+                gsap.to(card, {
+                    y: direction,
+                    duration: 1.5,
+                    ease: "back.inOut",
+                    onComplete: () => {
+                        card.visible = false
+                    }
+                });
+            });
+        });
     }
 
     protected async fetchCardsInfo() {
@@ -83,8 +101,14 @@ export default class CardsTable extends PIXI.Container {
         let x = margin;
         let y = margin;
 
-        this._cards.forEach((card) => {
+        const cardsPerRow = Math.floor((isPortrait ? portraitWidth : landscapeWidth) / (cardWidth + margin));
+        this._cardColumns = Array.from({ length: cardsPerRow }, () => []);
+
+        this._cards.forEach((card, index) => {
             card.position.set(x + card.width / 2, y + card.height / 2);
+
+            const columnIndex = index % cardsPerRow;
+            this._cardColumns[columnIndex].push(card);
 
             x += cardWidth + margin;
             if (x + cardWidth > (isPortrait ? portraitWidth : landscapeWidth) - margin) {

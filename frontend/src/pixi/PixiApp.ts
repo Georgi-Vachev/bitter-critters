@@ -36,8 +36,9 @@ export default class PixiApp {
         this._cardsTable = new CardsTable(this._app, this.onCardPick.bind(this));
         await this._cardsTable.init();
 
-        this._picksArea = new PicksArea(this._app.renderer.width, this._app.renderer.height, this.addRandomCard.bind(this));
+        this._picksArea = new PicksArea(this._app.renderer.width, this._app.renderer.height, this.addRandomCard.bind(this), this.onBattleStart.bind(this));
         this._choiceScreen = new ChoiceScreen(this._app);
+
 
         this._app.stage.addChild(this._cardsTable, this._picksArea, this._choiceScreen);
     }
@@ -101,11 +102,11 @@ export default class PixiApp {
             cardData.name,
             (name: string) => {
                 console.log(`Picked: ${name}`);
-                this._picksArea.addCard(card.cardTexture, "left");
+                this._picksArea.addCard(card, "left");
             },
             (name: string) => {
                 console.log(`Fight with: ${name}`);
-                this._picksArea.addCard(card.cardTexture, "right");
+                this._picksArea.addCard(card, "right");
             }
         );
     }
@@ -113,6 +114,13 @@ export default class PixiApp {
     protected addRandomCard(side: "left" | "right"): void {
         const card = this._cardsTable.cards[Math.floor(Math.random() * this._cardsTable.cards.length)];
 
-        this._picksArea.addCard(card.cardTexture, side);
+        this._picksArea.addCard(card, side);
+    }
+
+    protected onBattleStart(): void {
+        const chosenCards = this._picksArea.chosenCards
+        this._picksArea.animateIntro()
+        this._cardsTable.animateIntro()
+        console.log("Battle begins between:", chosenCards.left, chosenCards.right);
     }
 }

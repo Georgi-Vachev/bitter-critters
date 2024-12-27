@@ -1,21 +1,25 @@
 import * as PIXI from "pixi.js";
 import { gsap } from "gsap";
+import Card from "./Card";
 
 export default class PicksArea extends PIXI.Container {
     protected _background!: PIXI.Graphics;
     protected _text!: PIXI.Container;
-    protected _leftCreature: PIXI.Sprite | null = null;
-    protected _rightCreature: PIXI.Sprite | null = null;
+    protected _leftCardSprite: PIXI.Sprite | null = null;
+    protected _rightCardSprite: PIXI.Sprite | null = null;
+    protected _leftCard: Card | null = null;
+    protected _rightCard: Card | null = null;
     protected _leftButtons: PIXI.Container | null = null;
     protected _rightButtons: PIXI.Container | null = null;
     protected _leftRandomButton!: PIXI.Container;
     protected _rightRandomButton!: PIXI.Container;
     protected _battleButton!: PIXI.Container;
     protected _addRandomCard: (side: "left" | "right") => void;
+    protected _onBattleStart: () => void;
     protected readonly _appWidth: number;
     protected readonly _appHeight: number;
 
-    constructor(appWidth: number, appHeight: number, addRandomCard: (side: "left" | "right") => void) {
+    constructor(appWidth: number, appHeight: number, addRandomCard: (side: "left" | "right") => void, onBattleStart: () => void) {
         super();
         this._appWidth = appWidth;
         this._appHeight = appHeight;
@@ -23,10 +27,23 @@ export default class PicksArea extends PIXI.Container {
         this.height = 100;
 
         this._addRandomCard = addRandomCard;
+        this._onBattleStart = onBattleStart;
 
         this.createBackground();
         this.createPlaceholderButtons();
         this.createBattleButton();
+    }
+
+    get chosenCards(): { left: Card | null; right: Card | null } {
+        return { left: this._leftCard, right: this._rightCard };
+    }
+
+    public animateIntro(): void {
+        gsap.to(this, {
+            y: this._appHeight,
+            duration: 1.5,
+            ease: "back.inOut"
+        });
     }
 
     protected createBackground(): void {
@@ -175,6 +192,7 @@ export default class PicksArea extends PIXI.Container {
 
         this._battleButton.on("pointerup", () => {
             if (isHovered) {
+                this._onBattleStart();
                 gsap.to(this._battleButton.scale, {
                     x: 1.075,
                     y: 1.075,
@@ -228,42 +246,43 @@ export default class PicksArea extends PIXI.Container {
         return box;
     }
 
-    public addCard(creatureTexture: PIXI.Texture, position: "left" | "right"): void {
+    public addCard(card: Card, position: "left" | "right"): void {
         const isLeft = position === "left";
 
-        const oldCreature = isLeft ? this._leftCreature : this._rightCreature;
+        isLeft ? this._leftCard = card : this._rightCard = card;
+        const oldCardSprite = isLeft ? this._leftCardSprite : this._rightCardSprite;
         const oldButtons = isLeft ? this._leftButtons : this._rightButtons;
         const randomButton = isLeft ? this._leftRandomButton : this._rightRandomButton;
 
-        if (oldCreature) this._background.removeChild(oldCreature);
+        if (oldCardSprite) this._background.removeChild(oldCardSprite);
         if (oldButtons) this._background.removeChild(oldButtons);
 
-        const creature = new PIXI.Sprite(creatureTexture);
-        creature.width = 200;
-        creature.height = 200;
-        creature.position.set(
+        const cardSprite = new PIXI.Sprite(card.cardTexture);
+        cardSprite.width = 200;
+        cardSprite.height = 200;
+        cardSprite.position.set(
             isLeft
-                ? this._appWidth / 2 - creature.width * 1.1
-                : this._appWidth / 2 + creature.width * 1.1,
+                ? this._appWidth / 2 - cardSprite.width * 1.1
+                : this._appWidth / 2 + cardSprite.width * 1.1,
             this._appHeight - 200
         );
 
         if (isLeft) {
-            creature.scale.x *= -1;
-            this._leftCreature = creature;
-            this._leftButtons = this.createCreatureButtons(position);
+            cardSprite.scale.x *= -1;
+            this._leftCardSprite = cardSprite;
+            this._leftButtons = this.createCardSpriteButtons(position);
         } else {
-            this._rightCreature = creature;
-            this._rightButtons = this.createCreatureButtons(position);
+            this._rightCardSprite = cardSprite;
+            this._rightButtons = this.createCardSpriteButtons(position);
         }
 
         this._background.removeChild(randomButton);
-        this._background.addChild(creature, isLeft ? this._leftButtons! : this._rightButtons!);
+        this._background.addChild(cardSprite, isLeft ? this._leftButtons! : this._rightButtons!);
 
         this.updateTextVisibility();
     }
 
-    protected createCreatureButtons(position: "left" | "right"): PIXI.Container {
+    protected createCardSpriteButtons(position: "left" | "right"): PIXI.Container {
         const container = new PIXI.Container();
 
         const xButton = this.createActionBox(0xff0000, "X", 75, 1);
@@ -273,7 +292,7 @@ export default class PicksArea extends PIXI.Container {
                 : this._appWidth / 2 + this._background.width / 2 - xButton.width * 1.2,
             (this._appHeight - this._background.height / 2) - xButton.height * 1.25
         );
-        xButton.on("pointerdown", () => this.removeCreature(position));
+        xButton.on("pointerdown", () => this.removeCardSprite(position));
 
         const questionButton = this.createActionBox(0xebcd34, "?", 75, 1);
         questionButton.position.set(
@@ -290,25 +309,25 @@ export default class PicksArea extends PIXI.Container {
         return container;
     }
 
-    protected removeCreature(position: "left" | "right"): void {
+    protected removeCardSprite(position: "left" | "right"): void {
         const isLeft = position === "left";
-        const creature = isLeft ? this._leftCreature : this._rightCreature;
+        const cardSprite = isLeft ? this._leftCardSprite : this._rightCardSprite;
         const buttons = isLeft ? this._leftButtons : this._rightButtons;
         const randomButton = isLeft ? this._leftRandomButton : this._rightRandomButton;
 
-        if (creature) this._background.removeChild(creature);
+        if (cardSprite) this._background.removeChild(cardSprite);
         if (buttons) this._background.removeChild(buttons);
 
         this._background.addChild(randomButton);
 
-        if (isLeft) this._leftCreature = null;
-        else this._rightCreature = null;
+        if (isLeft) this._leftCardSprite = null;
+        else this._rightCardSprite = null;
 
         this.updateTextVisibility();
     }
 
     protected updateTextVisibility(): void {
-        if (!this._leftCreature || !this._rightCreature) {
+        if (!this._leftCardSprite || !this._rightCardSprite) {
             if (!this._text.parent) this._background.addChild(this._text);
             this._battleButton.visible = false;
         } else {
@@ -316,5 +335,4 @@ export default class PicksArea extends PIXI.Container {
             this._battleButton.visible = true;
         }
     }
-
 }
