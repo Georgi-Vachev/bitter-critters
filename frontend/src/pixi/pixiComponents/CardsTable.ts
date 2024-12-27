@@ -39,21 +39,34 @@ export default class CardsTable extends PIXI.Container {
         this.calculateMaxScroll();
     }
 
-    public animateIntro() {
-        this._cardColumns.forEach((column, columnIndex) => {
-            const direction = columnIndex % 2 === 0 ? this.height : -this.height;
-            column.forEach((card) => {
-                gsap.to(card, {
-                    y: direction,
-                    duration: 1.5,
-                    ease: "back.inOut",
-                    onComplete: () => {
-                        card.visible = false
-                    }
+    public animateIntro(): Promise<void> {
+        return new Promise((resolve) => {
+            const duration = 1.5;
+            const animations: Promise<void>[] = [];
+
+            this._cardColumns.forEach((column, columnIndex) => {
+                const direction = columnIndex % 2 === 0 ? this.height : -this.height;
+                column.forEach((card) => {
+                    animations.push(
+                        new Promise((cardResolve) => {
+                            gsap.to(card, {
+                                y: direction,
+                                duration: duration,
+                                ease: "back.inOut",
+                                onComplete: () => {
+                                    card.visible = false;
+                                    cardResolve();
+                                }
+                            });
+                        })
+                    );
                 });
             });
+
+            Promise.all(animations).then(() => resolve());
         });
     }
+
 
     protected async fetchCardsInfo() {
         try {

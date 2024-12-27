@@ -38,13 +38,49 @@ export default class PicksArea extends PIXI.Container {
         return { left: this._leftCard, right: this._rightCard };
     }
 
-    public animateIntro(): void {
-        gsap.to(this, {
-            y: this._appHeight,
-            duration: 1.5,
-            ease: "back.inOut"
+    public animateIntro(): Promise<void> {
+        return new Promise((resolve) => {
+            const duration = 1.5;
+
+            gsap.to(this._background, {
+                y: this._appHeight,
+                duration: duration,
+                ease: "back.inOut"
+            });
+
+            const leftSpriteProps = { scaleX: this._leftCardSprite!.scale.x, scaleY: this._leftCardSprite!.scale.y, y: this._leftCardSprite!.y, x: this._leftCardSprite!.x };
+            const rightSpriteProps = { scaleX: this._rightCardSprite!.scale.x, scaleY: this._rightCardSprite!.scale.y, y: this._rightCardSprite!.y, x: this._rightCardSprite!.x };
+
+            const leftAnimation = gsap.to(leftSpriteProps, {
+                x: this._appWidth / 2 - this._leftCardSprite!.width,
+                y: this._appHeight / 2 - this._leftCardSprite!.height,
+                scaleX: -6,
+                scaleY: 6,
+                duration: duration,
+                ease: "back.inOut",
+                onUpdate: () => {
+                    this._leftCardSprite!.scale.set(leftSpriteProps.scaleX, leftSpriteProps.scaleY);
+                    this._leftCardSprite!.y = leftSpriteProps.y;
+                }
+            });
+
+            const rightAnimation = gsap.to(rightSpriteProps, {
+                x: this._appWidth / 2 + this._rightCardSprite!.width,
+                y: this._appHeight / 2 - this._rightCardSprite!.height,
+                scaleX: 6,
+                scaleY: 6,
+                duration: duration,
+                ease: "back.inOut",
+                onUpdate: () => {
+                    this._rightCardSprite!.scale.set(rightSpriteProps.scaleX, rightSpriteProps.scaleY);
+                    this._rightCardSprite!.y = rightSpriteProps.y;
+                }
+            });
+
+            Promise.all([leftAnimation, rightAnimation]).then(() => resolve());
         });
     }
+
 
     protected createBackground(): void {
         const backgroundWidth = this._appWidth * 0.4;
@@ -254,7 +290,7 @@ export default class PicksArea extends PIXI.Container {
         const oldButtons = isLeft ? this._leftButtons : this._rightButtons;
         const randomButton = isLeft ? this._leftRandomButton : this._rightRandomButton;
 
-        if (oldCardSprite) this._background.removeChild(oldCardSprite);
+        if (oldCardSprite) this.removeChild(oldCardSprite);
         if (oldButtons) this._background.removeChild(oldButtons);
 
         const cardSprite = new PIXI.Sprite(card.cardTexture);
@@ -277,7 +313,8 @@ export default class PicksArea extends PIXI.Container {
         }
 
         this._background.removeChild(randomButton);
-        this._background.addChild(cardSprite, isLeft ? this._leftButtons! : this._rightButtons!);
+        this._background.addChild(isLeft ? this._leftButtons! : this._rightButtons!);
+        this.addChild(cardSprite);
 
         this.updateTextVisibility();
     }
@@ -315,7 +352,7 @@ export default class PicksArea extends PIXI.Container {
         const buttons = isLeft ? this._leftButtons : this._rightButtons;
         const randomButton = isLeft ? this._leftRandomButton : this._rightRandomButton;
 
-        if (cardSprite) this._background.removeChild(cardSprite);
+        if (cardSprite) this.removeChild(cardSprite);
         if (buttons) this._background.removeChild(buttons);
 
         this._background.addChild(randomButton);
