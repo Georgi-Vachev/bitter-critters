@@ -23,7 +23,7 @@ export default class Card extends PIXI.Container {
         background.fill(0x444444);
         this.addChild(background);
 
-        const localImagePath = `/assets/images/${cardData.name.toLowerCase()}.png`;
+        const localImagePath = `/assets/images/creatures/${cardData.name.toLowerCase()}.png`;
         const img = new Image();
         img.src = localImagePath;
         img.onload = () => {

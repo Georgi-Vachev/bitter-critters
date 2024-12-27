@@ -8,6 +8,7 @@ export default class Arena extends PIXI.Container {
     protected _bluePart: PIXI.Graphics;
     protected _leftCardSprite: PIXI.Sprite | null = null;
     protected _rightCardSprite: PIXI.Sprite | null = null;
+    protected _background: PIXI.Sprite | null = null;
     protected readonly _appWidth: number;
     protected readonly _appHeight: number;
 
@@ -25,6 +26,7 @@ export default class Arena extends PIXI.Container {
         this._redPart = new PIXI.Graphics();
         this._bluePart = new PIXI.Graphics();
 
+        this.setupBackground();
         this.createIntroBackground();
     }
 
@@ -53,11 +55,28 @@ export default class Arena extends PIXI.Container {
                 duration: 1,
                 ease: "bounce.out",
                 onComplete: () => {
+                    this._background!.visible = true;
                     gsap.delayedCall(1, () => this.hideBackground());
                 }
             },
             "<"
         );
+    }
+
+    protected setupBackground(): void {
+        const localImagePath = `/assets/images/backgrounds/background_2.jpg`;
+        const img = new Image();
+        img.src = localImagePath;
+        img.onload = () => {
+            const texture = PIXI.Texture.from(img);
+            this._background = new PIXI.Sprite(texture);
+            this._background.width = this._appWidth;
+            this._background.height = this._appHeight;
+            this._background.position.set(0);
+
+            this._background.visible = false;
+            this.addChildAt(this._background, 0);
+        };
     }
 
     protected createIntroBackground() {
@@ -118,8 +137,8 @@ export default class Arena extends PIXI.Container {
         gsap.to(leftSpriteProps, {
             x: this._appWidth * 0.4,
             y: this._appHeight * 0.6,
-            scaleX: -4,
-            scaleY: 4,
+            scaleX: -5,
+            scaleY: 5,
             duration: duration,
             ease: "back.in",
             onUpdate: () => {
@@ -132,15 +151,14 @@ export default class Arena extends PIXI.Container {
         gsap.to(rightSpriteProps, {
             x: this._appWidth * 0.6,
             y: this._appHeight * 0.6,
-            scaleX: 4,
-            scaleY: 4,
+            scaleX: 5,
+            scaleY: 5,
             duration: duration,
             ease: "back.in",
             onUpdate: () => {
                 this._rightCardSprite!.scale.set(rightSpriteProps.scaleX, rightSpriteProps.scaleY);
                 this._rightCardSprite!.y = rightSpriteProps.y;
                 this._rightCardSprite!.x = rightSpriteProps.x;
-
             }
         });
     }
