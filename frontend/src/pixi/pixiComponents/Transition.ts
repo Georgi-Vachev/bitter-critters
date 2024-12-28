@@ -117,8 +117,8 @@ export default class Transition extends PIXI.Container {
         gsap.to(leftSpriteProps, {
             x: this._appWidth * 0.4,
             y: this._appHeight * 0.6,
-            scaleX: -5,
-            scaleY: 5,
+            scaleX: -6,
+            scaleY: 6,
             duration: duration,
             ease: "back.in",
             onUpdate: () => {
@@ -131,8 +131,8 @@ export default class Transition extends PIXI.Container {
         gsap.to(rightSpriteProps, {
             x: this._appWidth * 0.6,
             y: this._appHeight * 0.6,
-            scaleX: 5,
-            scaleY: 5,
+            scaleX: 6,
+            scaleY: 6,
             duration: duration,
             ease: "back.in",
             onUpdate: () => {

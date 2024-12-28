@@ -37,23 +37,36 @@ export default class BattleField extends PIXI.Container {
         this._picksArea.removeChosenCards();
         this.addChild(this._leftCardSprite, this._rightCardSprite);
 
-        // Animate the left card sprite to levitate
-        gsap.to(this._leftCardSprite, {
-            y: "-=10",
-            duration: 1,
-            yoyo: true,
-            repeat: -1,
-            ease: "power1.inOut"
-        });
+        const leftCardProps = { y: this._leftCardSprite.y, scaleX: this._leftCardSprite.scale.x, scaleY: this._leftCardSprite.scale.y };
+        const rightCardProps = { y: this._rightCardSprite.y, scaleX: this._rightCardSprite.scale.x, scaleY: this._rightCardSprite.scale.y };
 
-        // Animate the right card sprite to levitate
-        gsap.to(this._rightCardSprite, {
+        gsap.to(leftCardProps, {
             y: "-=10",
+            scaleX: "-=0.1",
+            scaleY: "+=0.1",
             duration: 1,
             yoyo: true,
             repeat: -1,
             ease: "power1.inOut",
-            delay: 0.5
+            onUpdate: () => {
+                this._leftCardSprite!.y = leftCardProps.y;
+                this._leftCardSprite!.scale.set(leftCardProps.scaleX, leftCardProps.scaleY);
+            }
+        });
+
+        gsap.to(rightCardProps, {
+            y: "-=10",
+            scaleX: "+=0.1",
+            scaleY: "+=0.1",
+            duration: 1,
+            yoyo: true,
+            repeat: -1,
+            ease: "power1.inOut",
+            delay: 0.5,
+            onUpdate: () => {
+                this._rightCardSprite!.y = rightCardProps.y;
+                this._rightCardSprite!.scale.set(rightCardProps.scaleX, rightCardProps.scaleY);
+            }
         });
     }
 
