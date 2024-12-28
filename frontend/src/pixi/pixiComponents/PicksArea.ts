@@ -42,10 +42,8 @@ export default class PicksArea extends PIXI.Container {
         return { leftCardSprite: this._leftCardSprite, rightCardSprite: this._rightCardSprite };
     }
 
-    public removeChosenCards(): { leftCardSprite: PIXI.Sprite | null; rightCardSprite: PIXI.Sprite | null } {
+    public removeChosenCards(): void {
         this.removeChild(this._leftCardSprite!, this._rightCardSprite!);
-
-        return { leftCardSprite: this._leftCardSprite, rightCardSprite: this._rightCardSprite };
     }
 
     public animateIntro(): Promise<void> {

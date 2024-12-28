@@ -3,7 +3,8 @@ import CardsTable from "./pixiComponents/CardsTable";
 import ChoiceScreen from "./pixiComponents/ChoiceScreen";
 import PicksArea from "./pixiComponents/PicksArea";
 import Card from "./pixiComponents/Card";
-import Arena from "./pixiComponents/Arena";
+import Transition from "./pixiComponents/Transition";
+import BattleField from "./pixiComponents/BattleField";
 
 const landscapeWidth = 2560;
 const landscapeHeight = 1440;
@@ -15,7 +16,8 @@ export default class PixiApp {
     protected _cardsTable!: CardsTable;
     protected _choiceScreen!: ChoiceScreen;
     protected _picksArea!: PicksArea;
-    protected _arena!: Arena;
+    protected _transition!: Transition;
+    protected _battleField!: BattleField;
     protected _orientation: "landscape" | "portrait" = "landscape";
 
     constructor() {
@@ -40,9 +42,10 @@ export default class PixiApp {
 
         this._picksArea = new PicksArea(this._app.renderer.width, this._app.renderer.height, this.addRandomCard.bind(this), this.onBattleStart.bind(this));
         this._choiceScreen = new ChoiceScreen(this._app);
-        this._arena = new Arena(this._app, this._picksArea);
+        this._battleField = new BattleField(this._app, this._picksArea);
+        this._transition = new Transition(this._app, this._battleField);
 
-        this._app.stage.addChild(this._cardsTable, this._arena, this._picksArea, this._choiceScreen);
+        this._app.stage.addChild(this._cardsTable, this._battleField, this._transition, this._picksArea, this._choiceScreen);
     }
 
     public attach(container: HTMLDivElement | null): void {
@@ -125,7 +128,9 @@ export default class PixiApp {
             this._cardsTable.animateIntro()
         ]);
 
-        this._arena.animateIntro();
+        const { leftCardSprite, rightCardSprite } = this._picksArea.chosenCardSprites;
+
+        this._transition.animateIntro(leftCardSprite!, rightCardSprite!);
     }
 
 }

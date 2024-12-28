@@ -1,18 +1,18 @@
 import * as PIXI from "pixi.js";
 import { gsap } from "gsap";
-import PicksArea from "./PicksArea";
-export default class Arena extends PIXI.Container {
+import BattleField from "./BattleField";
+
+export default class Transition extends PIXI.Container {
     protected _app: PIXI.Application;
-    protected _picksArea: PicksArea;
     protected _redPart: PIXI.Graphics;
     protected _bluePart: PIXI.Graphics;
     protected _leftCardSprite: PIXI.Sprite | null = null;
     protected _rightCardSprite: PIXI.Sprite | null = null;
-    protected _background: PIXI.Sprite | null = null;
+    protected _battleField: BattleField;
     protected readonly _appWidth: number;
     protected readonly _appHeight: number;
 
-    constructor(app: PIXI.Application, picksArea: PicksArea) {
+    constructor(app: PIXI.Application, battleField: BattleField) {
         super();
 
         const { width, height } = app.renderer;
@@ -21,19 +21,15 @@ export default class Arena extends PIXI.Container {
         this._appHeight = height;
 
         this._app = app;
-        this._picksArea = picksArea;
+        this._battleField = battleField;
 
         this._redPart = new PIXI.Graphics();
         this._bluePart = new PIXI.Graphics();
 
-        this.setupBackground();
         this.createIntroBackground();
     }
 
-    public animateIntro(): void {
-        const { leftCardSprite, rightCardSprite } = this._picksArea.removeChosenCards();
-        this.addChild(leftCardSprite!, rightCardSprite!);
-
+    public animateIntro(leftCardSprite: PIXI.Sprite, rightCardSprite: PIXI.Sprite): void {
         this._leftCardSprite = leftCardSprite;
         this._rightCardSprite = rightCardSprite;
 
@@ -55,28 +51,12 @@ export default class Arena extends PIXI.Container {
                 duration: 1,
                 ease: "bounce.out",
                 onComplete: () => {
-                    this._background!.visible = true;
+                    this._battleField.showBackground()
                     gsap.delayedCall(1, () => this.hideBackground());
                 }
             },
             "<"
         );
-    }
-
-    protected setupBackground(): void {
-        const localImagePath = `/assets/images/backgrounds/background_2.jpg`;
-        const img = new Image();
-        img.src = localImagePath;
-        img.onload = () => {
-            const texture = PIXI.Texture.from(img);
-            this._background = new PIXI.Sprite(texture);
-            this._background.width = this._appWidth;
-            this._background.height = this._appHeight;
-            this._background.position.set(0);
-
-            this._background.visible = false;
-            this.addChildAt(this._background, 0);
-        };
     }
 
     protected createIntroBackground() {
@@ -159,6 +139,9 @@ export default class Arena extends PIXI.Container {
                 this._rightCardSprite!.scale.set(rightSpriteProps.scaleX, rightSpriteProps.scaleY);
                 this._rightCardSprite!.y = rightSpriteProps.y;
                 this._rightCardSprite!.x = rightSpriteProps.x;
+            },
+            onComplete: () => {
+                this._battleField.startBattle(this._leftCardSprite!, this._rightCardSprite!);
             }
         });
     }
