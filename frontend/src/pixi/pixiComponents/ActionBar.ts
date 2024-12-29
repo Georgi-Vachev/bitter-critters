@@ -6,6 +6,7 @@ export default class ActionBar extends PIXI.Container {
     protected _abilitySlots: PIXI.Container[] = [];
     protected _consumableSlots: PIXI.Container[] = [];
     protected _isInteractive: boolean;
+    protected _theme: Theme;
     protected readonly _appWidth: number;
     protected readonly _appHeight: number;
 
@@ -13,31 +14,31 @@ export default class ActionBar extends PIXI.Container {
     private _topTriangleButton: PIXI.Graphics;
     private _bottomTriangleButton: PIXI.Graphics;
 
-    constructor(appWidth: number, appHeight: number, side: "left" | "right") {
+    constructor(appWidth: number, appHeight: number, side: "left" | "right", theme: Theme) {
         super();
         this._side = side;
         this._isInteractive = side === "right";
 
         this._appWidth = appWidth;
         this._appHeight = appHeight;
+        this._theme = theme;
 
-        // Set up layout and buttons
         this._rectangleBackground = this.createRectangle();
         this.addChild(this._rectangleBackground);
 
         this._topTriangleButton = this.createTriangle("up");
-        this._topTriangleButton.visible = false; // Hidden initially
+        this._topTriangleButton.visible = false;
         this.addChildAt(this._topTriangleButton, 0);
 
         this._bottomTriangleButton = this.createTriangle("down");
-        this._bottomTriangleButton.visible = false; // Hidden initially
+        this._bottomTriangleButton.visible = false;
         this.addChildAt(this._bottomTriangleButton, 0);
 
         this.setupLayout();
     }
 
     protected createRectangle(): PIXI.Graphics {
-        const bgColor = this._side === "left" ? 0xA89984 : 0x7C90A0;
+        const bgColor = this._side === "left" ? this._theme.leftMainColor : this._theme.rightMainColor;
 
         const rectangle = new PIXI.Graphics();
         rectangle.beginFill(bgColor);
@@ -53,8 +54,10 @@ export default class ActionBar extends PIXI.Container {
         const triangle = new PIXI.Graphics();
         const triangleWidth = this._appWidth * 0.1;
         const triangleHeight = this._appHeight * 0.15;
+        const color = this._side === "left" ? this._theme.leftButtonColor : this._theme.rightButtonColor;
+        const hoverColor = 0x000000;
 
-        triangle.beginFill(this._side === "left" ? 0x8A7664 : 0x5F7280);
+        triangle.beginFill(color);
         if (direction === "up") {
             if (this._side === "left") {
                 triangle.drawPolygon([
@@ -69,7 +72,7 @@ export default class ActionBar extends PIXI.Container {
                     0, triangleHeight,
                 ]);
             }
-            triangle.position.set(0, this._appHeight * 0.15); // Above the rectangle
+            triangle.position.set(0, this._appHeight * 0.15);
         } else {
             if (this._side === "left") {
                 triangle.drawPolygon([
@@ -84,7 +87,7 @@ export default class ActionBar extends PIXI.Container {
                     triangleWidth, triangleHeight,
                 ]);
             }
-            triangle.position.set(0, this._appHeight * 0.7); // Below the rectangle
+            triangle.position.set(0, this._appHeight * 0.7);
         }
         triangle.endFill();
 
@@ -94,11 +97,17 @@ export default class ActionBar extends PIXI.Container {
         triangle.on("pointerdown", () => {
             if (direction === "up") {
                 console.log(`${this._side} Action Bar: Switch to Abilities`);
-                // Implement switch to abilities logic
             } else {
                 console.log(`${this._side} Action Bar: Switch to Consumables`);
-                // Implement switch to consumables logic
             }
+        });
+
+        triangle.on("pointerover", () => {
+            triangle.tint = hoverColor;
+        });
+
+        triangle.on("pointerout", () => {
+            triangle.tint = 0xFFFFFF;
         });
 
         return triangle;
@@ -148,7 +157,7 @@ export default class ActionBar extends PIXI.Container {
 
         setTimeout(() => {
             slot.removeChild(cooldownOverlay);
-        }, 2000); // Cooldown duration
+        }, 2000);
     }
 
     public useConsumable(index: number, count: number): void {

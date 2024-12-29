@@ -18,6 +18,8 @@ export default class PixiApp {
     protected _picksArea!: PicksArea;
     protected _transition!: Transition;
     protected _battleField!: BattleField;
+    protected _themes: Array<Theme> = [];
+    protected _currentTheme!: Theme;
     protected _orientation: "landscape" | "portrait" = "landscape";
 
     constructor() {
@@ -29,6 +31,12 @@ export default class PixiApp {
         await this._app.init(options);
 
         (globalThis as any).__PIXI_APP__ = this._app;
+
+        const response = await fetch("/Config.json");
+        const config = await response.json();
+
+        this._themes = config.themes;
+        this._currentTheme = this._themes[Math.floor(Math.random() * this._themes.length)];
 
         window.addEventListener("resize", this.resizeCanvas.bind(this));
 
@@ -42,8 +50,8 @@ export default class PixiApp {
 
         this._picksArea = new PicksArea(this._app.renderer.width, this._app.renderer.height, this.addRandomCard.bind(this), this.onBattleStart.bind(this));
         this._choiceScreen = new ChoiceScreen(this._app);
-        this._battleField = new BattleField(this._app, this._picksArea);
-        this._transition = new Transition(this._app, this._battleField);
+        this._battleField = new BattleField(this._app, this._picksArea, this._currentTheme);
+        this._transition = new Transition(this._app, this._battleField, this._currentTheme);
 
         this._app.stage.addChild(this._cardsTable, this._battleField, this._transition, this._picksArea, this._choiceScreen);
     }
@@ -83,7 +91,6 @@ export default class PixiApp {
         if ((this._orientation === "landscape" && isPortrait) || (this._orientation === "portrait" && !isPortrait)) {
             this._cardsTable?.adjustPosition();
             this._choiceScreen?.adjustPosition();
-            // Add picks area adjustment
         }
 
         const scaleX = (window.innerWidth / 1.1) / this._app.renderer.width;

@@ -10,10 +10,11 @@ export default class BattleField extends PIXI.Container {
     protected _playerActionBar: ActionBar | null = null;
     protected _enemyActionBar: ActionBar | null = null;
     protected _background: PIXI.Sprite | null = null;
+    protected _theme: Theme;
     protected readonly _appWidth: number;
     protected readonly _appHeight: number;
 
-    constructor(app: PIXI.Application, picksArea: PicksArea) {
+    constructor(app: PIXI.Application, picksArea: PicksArea, theme: Theme) {
         super();
 
         const { width, height } = app.renderer;
@@ -23,6 +24,7 @@ export default class BattleField extends PIXI.Container {
 
         this._app = app;
         this._picksArea = picksArea;
+        this._theme = theme;
 
         this.setupActionBars()
         this.setupBackground();
@@ -93,7 +95,7 @@ export default class BattleField extends PIXI.Container {
     }
 
     protected setupBackground(): void {
-        const localImagePath = `/assets/images/backgrounds/background_${Math.floor(Math.random() * 6)}.jpg`;
+        const localImagePath = `/assets/images/backgrounds/${this._theme.background}.jpg`;
         const img = new Image();
         img.src = localImagePath;
         img.onload = () => {
@@ -109,8 +111,8 @@ export default class BattleField extends PIXI.Container {
     }
 
     protected setupActionBars(): void {
-        this._playerActionBar = new ActionBar(this._appWidth, this._appHeight, "right");
-        this._enemyActionBar = new ActionBar(this._appWidth, this._appHeight, "left");
+        this._playerActionBar = new ActionBar(this._appWidth, this._appHeight, "right", this._theme);
+        this._enemyActionBar = new ActionBar(this._appWidth, this._appHeight, "left", this._theme);
 
         this._playerActionBar.position.set(this._appWidth, 0);
         this._enemyActionBar.position.set(-this._appWidth * 0.1, 0);

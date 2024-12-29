@@ -1,0 +1,46 @@
+{
+    "themes": [
+        {
+            "background": "background_0",
+            "leftMainColor": "0x757575",
+            "leftButtonColor": "0x4d4d4d",
+            "rightMainColor": "0x014218",
+            "rightButtonColor": "0x002b0f"
+        },
+        {
+            "background": "background_1",
+            "leftMainColor": "0x694429",
+            "leftButtonColor": "0x402714",
+            "rightMainColor": "0x3ba149",
+            "rightButtonColor": "0x267330"
+        },
+        {
+            "background": "background_2",
+            "leftMainColor": "0x9343b5",
+            "leftButtonColor": "0x762f94",
+            "rightMainColor": "0xbf900f",
+            "rightButtonColor": "0x997103"
+        },
+        {
+            "background": "background_3",
+            "leftMainColor": "0x52afd1",
+            "leftButtonColor": "0x0c688a",
+            "rightMainColor": "0x9343b5",
+            "rightButtonColor": "0x762f94"
+        },
+        {
+            "background": "background_4",
+            "leftMainColor": "0x873b9c",
+            "leftButtonColor": "0x511761",
+            "rightMainColor": "0x50485c",
+            "rightButtonColor": "0x2e2738"
+        },
+        {
+            "background": "background_5",
+            "leftMainColor": "0x854e21",
+            "leftButtonColor": "0x4f2909",
+            "rightMainColor": "0xbacc41",
+            "rightButtonColor": "0x68750e"
+        }
+    ]
+}
