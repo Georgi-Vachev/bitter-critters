@@ -107,11 +107,11 @@ export default class PixiApp {
             cardData.name,
             (name: string) => {
                 console.log(`Picked: ${name}`);
-                this._picksArea.addCard(card, "left");
+                this._picksArea.addCard(card, "right");
             },
             (name: string) => {
                 console.log(`Fight with: ${name}`);
-                this._picksArea.addCard(card, "right");
+                this._picksArea.addCard(card, "left");
             }
         );
     }

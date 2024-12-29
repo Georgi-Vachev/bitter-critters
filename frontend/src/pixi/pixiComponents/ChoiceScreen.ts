@@ -35,12 +35,12 @@ export default class ChoiceScreen extends PIXI.Container {
             card.position.set(this._app.renderer.width / 2, this._app.renderer.height / 2 - ChoiceScreen.BUTTON_HEIGHT / 2);
         }
 
-        this._pickButton?.position.set(
-            this._app.renderer.width / 2 - this._pickButton.width,
+        this._fightButton?.position.set(
+            this._app.renderer.width / 2 - this._fightButton.width,
             (this._app.renderer.height + this._currentCard!.height) / 2
         );
 
-        this._fightButton?.position.set(
+        this._pickButton?.position.set(
             this._app.renderer.width / 2,
             (this._app.renderer.height + this._currentCard!.height) / 2
         );
@@ -143,10 +143,9 @@ export default class ChoiceScreen extends PIXI.Container {
 
         this._pickButton.interactive = true;
         this._pickButton.cursor = "pointer";
-        this._pickButton.position.set(this._app.renderer.width / 2 - buttonWidth, (this._app.renderer.height + this._currentCard!.height) / 2);
+        this._pickButton.position.set(this._app.renderer.width / 2, (this._app.renderer.height + this._currentCard!.height) / 2);
 
         this._pickButton.on("pointerover", () => {
-            console.error('pointerover')
             pickButtonBackground.tint = 0x00ff00;
         });
         this._pickButton.on("pointerout", () => {
@@ -174,7 +173,7 @@ export default class ChoiceScreen extends PIXI.Container {
 
         this._fightButton.interactive = true;
         this._fightButton.cursor = "pointer";
-        this._fightButton.position.set(this._app.renderer.width / 2, (this._app.renderer.height + this._currentCard!.height) / 2);
+        this._fightButton.position.set(this._app.renderer.width / 2 - buttonWidth, (this._app.renderer.height + this._currentCard!.height) / 2);
 
         this._fightButton.on("pointerover", () => {
             fightButtonBackground.tint = 0xff0000;

@@ -51,7 +51,7 @@ export default class Transition extends PIXI.Container {
                 duration: 1,
                 ease: "bounce.out",
                 onComplete: () => {
-                    this._battleField.showBackground()
+                    this._battleField.reveal()
                     gsap.delayedCall(1, () => this.hideBackground());
                 }
             },
