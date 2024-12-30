@@ -1,4 +1,5 @@
 import * as PIXI from "pixi.js";
+import { gsap } from "gsap";
 import CardsTable from "./pixiComponents/CardsTable";
 import ChoiceScreen from "./pixiComponents/ChoiceScreen";
 import PicksArea from "./pixiComponents/PicksArea";
@@ -21,6 +22,7 @@ export default class PixiApp {
     protected _themes: Array<Theme> = [];
     protected _currentTheme!: Theme;
     protected _orientation: "landscape" | "portrait" = "landscape";
+    protected _battleInProgress: boolean = false;
 
     constructor() {
         this._app = new PIXI.Application();
@@ -72,6 +74,7 @@ export default class PixiApp {
 
     public destroy(): void {
         if (this._app) {
+            gsap.globalTimeline.clear();
             this._app.destroy(true, { children: true });
             this._app = null;
         }
@@ -130,6 +133,9 @@ export default class PixiApp {
     }
 
     protected async onBattleStart(): Promise<void> {
+        if (this._battleInProgress) return;
+        this._battleInProgress = true
+
         await Promise.all([
             this._picksArea.animateIntro(),
             this._cardsTable.animateIntro()
