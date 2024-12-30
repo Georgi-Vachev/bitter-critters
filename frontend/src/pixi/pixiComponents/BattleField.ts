@@ -2,14 +2,16 @@ import * as PIXI from "pixi.js";
 import { gsap } from "gsap";
 import PicksArea from "./PicksArea";
 import ActionBar from "./ActionBar";
+import InfoBar from "./InfoBar";
 export default class BattleField extends PIXI.Container {
     protected _app: PIXI.Application;
     protected _picksArea: PicksArea;
-    protected _leftCardSprite: PIXI.Sprite | null = null;
-    protected _rightCardSprite: PIXI.Sprite | null = null;
-    protected _playerActionBar: ActionBar | null = null;
-    protected _enemyActionBar: ActionBar | null = null;
-    protected _background: PIXI.Sprite | null = null;
+    protected _leftCardSprite!: PIXI.Sprite;
+    protected _rightCardSprite!: PIXI.Sprite;
+    protected _playerActionBar!: ActionBar;
+    protected _enemyActionBar!: ActionBar;
+    protected _infoBar!: InfoBar;
+    protected _background!: PIXI.Sprite;
     protected _theme: Theme;
     protected readonly _appWidth: number;
     protected readonly _appHeight: number;
@@ -26,6 +28,7 @@ export default class BattleField extends PIXI.Container {
         this._picksArea = picksArea;
         this._theme = theme;
 
+        this.setupInfoBar();
         this.setupActionBars()
         this.setupBackground();
     }
@@ -34,6 +37,7 @@ export default class BattleField extends PIXI.Container {
         this._background!.visible = true;
         this._playerActionBar!.visible = true;
         this._enemyActionBar!.visible = true;
+        this._infoBar!.visible = true;
     }
 
     public startBattle(leftCardSprite: PIXI.Sprite, rightCardSprite: PIXI.Sprite): void {
@@ -43,6 +47,14 @@ export default class BattleField extends PIXI.Container {
         this._picksArea.removeChosenCards();
         this.addChild(this._leftCardSprite, this._rightCardSprite);
 
+        this.beginCardsIdleAnimation();
+
+        this._playerActionBar.revealRectangle();
+        this._enemyActionBar.revealRectangle();
+        this._infoBar.revealRectangle();
+    }
+
+    protected beginCardsIdleAnimation(): void {
         const leftCardProps = { y: this._leftCardSprite.y, scaleX: this._leftCardSprite.scale.x, scaleY: this._leftCardSprite.scale.y };
         const rightCardProps = { y: this._rightCardSprite.y, scaleX: this._rightCardSprite.scale.x, scaleY: this._rightCardSprite.scale.y };
 
@@ -73,24 +85,6 @@ export default class BattleField extends PIXI.Container {
                 this._rightCardSprite!.y = rightCardProps.y;
                 this._rightCardSprite!.scale.set(rightCardProps.scaleX, rightCardProps.scaleY);
             }
-        });
-
-        gsap.to(this._playerActionBar!.position, {
-            x: this._playerActionBar!.x - this._playerActionBar!.width,
-            duration: 1,
-            ease: "bounce.out",
-            onComplete: () => {
-                this._playerActionBar!.revealTriangleButtons();
-            },
-        });
-
-        gsap.to(this._enemyActionBar!.position, {
-            x: 0,
-            duration: 1,
-            ease: "bounce.out",
-            onComplete: () => {
-                this._enemyActionBar!.revealTriangleButtons();
-            },
         });
     }
 
@@ -123,13 +117,12 @@ export default class BattleField extends PIXI.Container {
         this.addChild(this._playerActionBar, this._enemyActionBar);
     }
 
-    protected revealTriangles(actionBar: ActionBar): void {
-        const { top, bottom } = actionBar.getTriangles();
+    protected setupInfoBar(): void {
+        this._infoBar = new InfoBar(this._appWidth, this._appHeight, this._theme);
+        this._infoBar.position.set(0, -this._appHeight * 0.15);
 
-        gsap.fromTo(
-            [top, bottom],
-            { alpha: 0 },
-            { alpha: 1, duration: 0.5, stagger: 0.2 }
-        );
+        this._infoBar.visible = false;
+
+        this.addChild(this._infoBar);
     }
 }

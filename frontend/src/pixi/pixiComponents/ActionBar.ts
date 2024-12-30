@@ -7,12 +7,11 @@ export default class ActionBar extends PIXI.Container {
     protected _consumableSlots: PIXI.Container[] = [];
     protected _isInteractive: boolean;
     protected _theme: Theme;
+    protected _rectangleBackground: PIXI.Graphics;
+    protected _topTriangleButton: PIXI.Graphics;
+    protected _bottomTriangleButton: PIXI.Graphics;
     protected readonly _appWidth: number;
     protected readonly _appHeight: number;
-
-    private _rectangleBackground: PIXI.Graphics;
-    private _topTriangleButton: PIXI.Graphics;
-    private _bottomTriangleButton: PIXI.Graphics;
 
     constructor(appWidth: number, appHeight: number, side: "left" | "right", theme: Theme) {
         super();
@@ -35,6 +34,56 @@ export default class ActionBar extends PIXI.Container {
         this.addChildAt(this._bottomTriangleButton, 0);
 
         this.setupLayout();
+    }
+
+    public revealRectangle(): void {
+        gsap.to(this.position, {
+            x: this._side === 'left' ? 0 : this.x - this.width,
+            duration: 1,
+            ease: "bounce.out",
+            onComplete: () => {
+                this.revealTriangleButtons();
+            },
+        });
+    }
+
+    public useAbility(index: number): void {
+        const slot = this._abilitySlots[index];
+        if (!slot) return;
+
+        const cooldownOverlay = new PIXI.Graphics();
+        cooldownOverlay.beginFill(0x000000, 0.5);
+        cooldownOverlay.drawRect(0, 0, slot.width, slot.height);
+        cooldownOverlay.endFill();
+        slot.addChild(cooldownOverlay);
+
+        setTimeout(() => {
+            slot.removeChild(cooldownOverlay);
+        }, 2000);
+    }
+
+    public useConsumable(index: number, count: number): void {
+        const slot = this._consumableSlots[index];
+        if (!slot) return;
+
+        console.log(`Consumable used at slot ${index}. Remaining count: ${count}`);
+    }
+
+    protected revealTriangleButtons(): void {
+        this._topTriangleButton.visible = true;
+        this._bottomTriangleButton.visible = true;
+
+        gsap.to(this._topTriangleButton!.position, {
+            y: 0,
+            duration: 1,
+            ease: "power1.out",
+        });
+
+        gsap.to(this._bottomTriangleButton!.position, {
+            y: this._appHeight * 0.85,
+            duration: 1,
+            ease: "power1.out",
+        });
     }
 
     protected createRectangle(): PIXI.Graphics {
@@ -143,51 +192,5 @@ export default class ActionBar extends PIXI.Container {
 
     protected onSlotClick(index: number): void {
         console.log(`Slot ${index} clicked on ${this._side} bar`);
-    }
-
-    public useAbility(index: number): void {
-        const slot = this._abilitySlots[index];
-        if (!slot) return;
-
-        const cooldownOverlay = new PIXI.Graphics();
-        cooldownOverlay.beginFill(0x000000, 0.5);
-        cooldownOverlay.drawRect(0, 0, slot.width, slot.height);
-        cooldownOverlay.endFill();
-        slot.addChild(cooldownOverlay);
-
-        setTimeout(() => {
-            slot.removeChild(cooldownOverlay);
-        }, 2000);
-    }
-
-    public useConsumable(index: number, count: number): void {
-        const slot = this._consumableSlots[index];
-        if (!slot) return;
-
-        console.log(`Consumable used at slot ${index}. Remaining count: ${count}`);
-    }
-
-    public revealTriangleButtons(): void {
-        this._topTriangleButton.visible = true;
-        this._bottomTriangleButton.visible = true;
-
-        gsap.to(this._topTriangleButton!.position, {
-            y: 0,
-            duration: 1,
-            ease: "power1.out",
-        });
-
-        gsap.to(this._bottomTriangleButton!.position, {
-            y: this._appHeight * 0.85,
-            duration: 1,
-            ease: "power1.out",
-        });
-    }
-
-    public getTriangles(): { top: PIXI.Graphics; bottom: PIXI.Graphics } {
-        return {
-            top: this._topTriangleButton,
-            bottom: this._bottomTriangleButton,
-        };
     }
 }
