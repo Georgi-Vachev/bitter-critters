@@ -13,16 +13,11 @@ export default class BattleField extends PIXI.Container {
     protected _infoBar!: InfoBar;
     protected _background!: PIXI.Sprite;
     protected _theme: Theme;
-    protected readonly _appWidth: number;
-    protected readonly _appHeight: number;
+    protected readonly _appWidth: number = 2560;
+    protected readonly _appHeight: number = 1440;
 
     constructor(app: PIXI.Application, picksArea: PicksArea, theme: Theme) {
         super();
-
-        const { width, height } = app.renderer;
-
-        this._appWidth = width;
-        this._appHeight = height;
 
         this._app = app;
         this._picksArea = picksArea;
@@ -105,8 +100,8 @@ export default class BattleField extends PIXI.Container {
     }
 
     protected setupActionBars(): void {
-        this._playerActionBar = new ActionBar(this._appWidth, this._appHeight, "right", this._theme);
-        this._enemyActionBar = new ActionBar(this._appWidth, this._appHeight, "left", this._theme);
+        this._playerActionBar = new ActionBar("right", this._theme);
+        this._enemyActionBar = new ActionBar("left", this._theme);
 
         this._playerActionBar.position.set(this._appWidth, 0);
         this._enemyActionBar.position.set(-this._appWidth * 0.1, 0);
@@ -118,7 +113,7 @@ export default class BattleField extends PIXI.Container {
     }
 
     protected setupInfoBar(): void {
-        this._infoBar = new InfoBar(this._appWidth, this._appHeight, this._theme);
+        this._infoBar = new InfoBar(this._theme);
         this._infoBar.position.set(0, -this._appHeight * 0.15);
 
         this._infoBar.visible = false;

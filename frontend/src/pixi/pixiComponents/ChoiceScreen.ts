@@ -15,6 +15,8 @@ export default class ChoiceScreen extends PIXI.Container {
     protected _currentCard: PIXI.Container | null = null;
     protected _onPick: ((name: string) => void) | null = null;
     protected _onFight: ((name: string) => void) | null = null;
+    protected readonly _appWidth: number = 2560;
+    protected readonly _appHeight: number = 1440;
 
     constructor(app: PIXI.Application) {
         super()
@@ -27,22 +29,22 @@ export default class ChoiceScreen extends PIXI.Container {
         }
 
         this._overlay.clear();
-        this._overlay.rect(0, 0, this._app.renderer.width, this._app.renderer.height);
+        this._overlay.rect(0, 0, this._appWidth, this._appHeight);
         this._overlay.fill(0x000000, 0.5);
 
         if (this._cardContainer.children.length > 0) {
             const card = this._cardContainer.children[0];
-            card.position.set(this._app.renderer.width / 2, this._app.renderer.height / 2 - ChoiceScreen.BUTTON_HEIGHT / 2);
+            card.position.set(this._appWidth / 2, this._appHeight / 2 - ChoiceScreen.BUTTON_HEIGHT / 2);
         }
 
         this._fightButton?.position.set(
-            this._app.renderer.width / 2 - this._fightButton.width,
-            (this._app.renderer.height + this._currentCard!.height) / 2
+            this._appWidth / 2 - this._fightButton.width,
+            (this._appHeight + this._currentCard!.height) / 2
         );
 
         this._pickButton?.position.set(
-            this._app.renderer.width / 2,
-            (this._app.renderer.height + this._currentCard!.height) / 2
+            this._appWidth / 2,
+            (this._appHeight + this._currentCard!.height) / 2
         );
     }
 
@@ -62,7 +64,7 @@ export default class ChoiceScreen extends PIXI.Container {
             this._overlay = new PIXI.Graphics();
             this._cardContainer = new PIXI.Container();
 
-            this._overlay.rect(0, 0, this._app.renderer.width, this._app.renderer.height);
+            this._overlay.rect(0, 0, this._appWidth, this._appHeight);
             this._overlay.fill(0x000000, 0.5);
             this._overlay.interactive = true;
 
@@ -80,8 +82,8 @@ export default class ChoiceScreen extends PIXI.Container {
         const cardProps = { x: card.x, y: card.y, scaleX: card.scale.x, scaleY: card.scale.y };
 
         gsap.to(cardProps, {
-            x: this._app.renderer.width / 2,
-            y: this._app.renderer.height / 2 - ChoiceScreen.BUTTON_HEIGHT / 2,
+            x: this._appWidth / 2,
+            y: this._appHeight / 2 - ChoiceScreen.BUTTON_HEIGHT / 2,
             scaleX: 2,
             scaleY: 2,
             duration: 0.25,
@@ -143,7 +145,7 @@ export default class ChoiceScreen extends PIXI.Container {
 
         this._pickButton.interactive = true;
         this._pickButton.cursor = "pointer";
-        this._pickButton.position.set(this._app.renderer.width / 2, (this._app.renderer.height + this._currentCard!.height) / 2);
+        this._pickButton.position.set(this._appWidth / 2, (this._appHeight + this._currentCard!.height) / 2);
 
         this._pickButton.on("pointerover", () => {
             pickButtonBackground.tint = 0x00ff00;
@@ -173,7 +175,7 @@ export default class ChoiceScreen extends PIXI.Container {
 
         this._fightButton.interactive = true;
         this._fightButton.cursor = "pointer";
-        this._fightButton.position.set(this._app.renderer.width / 2 - buttonWidth, (this._app.renderer.height + this._currentCard!.height) / 2);
+        this._fightButton.position.set(this._appWidth / 2 - buttonWidth, (this._appHeight + this._currentCard!.height) / 2);
 
         this._fightButton.on("pointerover", () => {
             fightButtonBackground.tint = 0xff0000;

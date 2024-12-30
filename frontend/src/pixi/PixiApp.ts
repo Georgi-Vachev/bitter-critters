@@ -50,7 +50,7 @@ export default class PixiApp {
         this._cardsTable = new CardsTable(this._app, this.onCardPick.bind(this));
         await this._cardsTable.init();
 
-        this._picksArea = new PicksArea(this._app.renderer.width, this._app.renderer.height, this.addRandomCard.bind(this), this.onBattleStart.bind(this));
+        this._picksArea = new PicksArea(this.addRandomCard.bind(this), this.onBattleStart.bind(this));
         this._choiceScreen = new ChoiceScreen(this._app);
         this._battleField = new BattleField(this._app, this._picksArea, this._currentTheme);
         this._transition = new Transition(this._app, this._battleField, this._currentTheme);
@@ -82,18 +82,18 @@ export default class PixiApp {
 
     protected resizeCanvas = () => {
         if (!this._app) return;
-
         const isPortrait = window.innerHeight > window.innerWidth;
-
-        if (isPortrait) {
-            this._app.renderer.resize(portraitWidth, portraitHeight);
-        } else {
-            this._app.renderer.resize(landscapeWidth, landscapeHeight);
-        }
-
-        if ((this._orientation === "landscape" && isPortrait) || (this._orientation === "portrait" && !isPortrait)) {
-            this._cardsTable?.adjustPosition();
-            this._choiceScreen?.adjustPosition();
+        if (this._orientation !== (isPortrait ? "portrait" : "landscape")) {
+            if (isPortrait) {
+                this._app.renderer.resize(portraitWidth, portraitHeight);
+                this._app.stage.angle = 90;
+                this._app.stage.position.x = portraitWidth;
+            } else {
+                this._app.renderer.resize(landscapeWidth, landscapeHeight);
+                this._app.stage.angle = 0;
+                this._app.stage.position.x = 0;
+            }
+            this._orientation = isPortrait ? "portrait" : "landscape";
         }
 
         const scaleX = (window.innerWidth / 1.1) / this._app.renderer.width;

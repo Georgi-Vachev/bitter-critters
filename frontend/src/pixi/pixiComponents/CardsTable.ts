@@ -104,7 +104,7 @@ export default class CardsTable extends PIXI.Container {
     }
 
     public adjustPosition() {
-        const isPortrait = window.innerHeight > window.innerWidth;
+        const isPortrait = false
         const margin = isPortrait ? 22 : 50;
         const cardWidth = 450;
         const cardHeight = 580;

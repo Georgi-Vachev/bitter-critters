@@ -10,16 +10,14 @@ export default class ActionBar extends PIXI.Container {
     protected _rectangleBackground: PIXI.Graphics;
     protected _topTriangleButton: PIXI.Graphics;
     protected _bottomTriangleButton: PIXI.Graphics;
-    protected readonly _appWidth: number;
-    protected readonly _appHeight: number;
+    protected readonly _appWidth: number = 2560;
+    protected readonly _appHeight: number = 1440;
 
-    constructor(appWidth: number, appHeight: number, side: "left" | "right", theme: Theme) {
+    constructor(side: "left" | "right", theme: Theme) {
         super();
         this._side = side;
         this._isInteractive = side === "right";
 
-        this._appWidth = appWidth;
-        this._appHeight = appHeight;
         this._theme = theme;
 
         this._rectangleBackground = this.createRectangle();

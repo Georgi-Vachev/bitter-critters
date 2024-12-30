@@ -6,13 +6,11 @@ export default class InfoBar extends PIXI.Container {
     protected _rectangleBackground: PIXI.Sprite;
     protected _leftTriangleButton: PIXI.Graphics;
     protected _bottomTriangleButton: PIXI.Graphics;
-    protected readonly _appWidth: number;
-    protected readonly _appHeight: number;
+    protected readonly _appWidth: number = 2560;
+    protected readonly _appHeight: number = 1440;
 
-    constructor(appWidth: number, appHeight: number, theme: Theme) {
+    constructor(theme: Theme) {
         super();
-        this._appWidth = appWidth;
-        this._appHeight = appHeight;
         this._theme = theme;
 
         this._rectangleBackground = this.createRectangle();

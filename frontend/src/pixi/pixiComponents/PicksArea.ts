@@ -16,14 +16,13 @@ export default class PicksArea extends PIXI.Container {
     protected _battleButton!: PIXI.Container;
     protected _addRandomCard: (side: "left" | "right") => void;
     protected _onBattleStart: () => void;
-    protected readonly _appWidth: number;
-    protected readonly _appHeight: number;
+    protected readonly _appWidth: number = 2560;
+    protected readonly _appHeight: number = 1440;
 
-    constructor(appWidth: number, appHeight: number, addRandomCard: (side: "left" | "right") => void, onBattleStart: () => void) {
+    constructor(addRandomCard: (side: "left" | "right") => void, onBattleStart: () => void) {
         super();
-        this._appWidth = appWidth;
-        this._appHeight = appHeight;
-        this.width = appWidth;
+
+        this.width = this._appWidth;
         this.height = 100;
 
         this._addRandomCard = addRandomCard;

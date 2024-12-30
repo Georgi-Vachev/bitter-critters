@@ -10,16 +10,11 @@ export default class Transition extends PIXI.Container {
     protected _rightCardSprite: PIXI.Sprite | null = null;
     protected _theme: Theme;
     protected _battleField: BattleField;
-    protected readonly _appWidth: number;
-    protected readonly _appHeight: number;
+    protected readonly _appWidth: number = 2560;
+    protected readonly _appHeight: number = 1440;
 
     constructor(app: PIXI.Application, battleField: BattleField, theme: Theme) {
         super();
-
-        const { width, height } = app.renderer;
-
-        this._appWidth = width;
-        this._appHeight = height;
 
         this._app = app;
         this._battleField = battleField;
