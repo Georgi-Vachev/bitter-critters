@@ -26,9 +26,13 @@ export default class HealthBar extends PIXI.Container {
 
     protected createPolygon(direction: "left" | "right"): PIXI.Graphics {
         const polygon = new PIXI.Graphics();
-        const color = 0x6B8E23
+        const fillColor = 0x6B8E23;
+        const strokeColor = 0x000000;
+        const strokeWidth = 2;
 
-        polygon.beginFill(color);
+        polygon.lineStyle(strokeWidth, strokeColor, 1);
+        polygon.beginFill(fillColor);
+
         if (direction === "left") {
             polygon.drawPolygon([
                 0, this._appHeight,
