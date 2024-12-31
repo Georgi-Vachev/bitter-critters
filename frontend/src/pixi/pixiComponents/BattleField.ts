@@ -3,6 +3,7 @@ import { gsap } from "gsap";
 import PicksArea from "./PicksArea";
 import ActionBar from "./ActionBar";
 import InfoBar from "./InfoBar";
+import HealthBar from "./HealthBar";
 export default class BattleField extends PIXI.Container {
     protected _app: PIXI.Application;
     protected _picksArea: PicksArea;
@@ -11,6 +12,7 @@ export default class BattleField extends PIXI.Container {
     protected _playerActionBar!: ActionBar;
     protected _enemyActionBar!: ActionBar;
     protected _infoBar!: InfoBar;
+    protected _healthBar!: HealthBar;
     protected _background!: PIXI.Sprite;
     protected _theme: Theme;
     protected readonly _appWidth: number = 2560;
@@ -23,6 +25,7 @@ export default class BattleField extends PIXI.Container {
         this._picksArea = picksArea;
         this._theme = theme;
 
+        this.setupHealthBar();
         this.setupInfoBar();
         this.setupActionBars()
         this.setupBackground();
@@ -33,6 +36,7 @@ export default class BattleField extends PIXI.Container {
         this._playerActionBar!.visible = true;
         this._enemyActionBar!.visible = true;
         this._infoBar!.visible = true;
+        this._healthBar!.visible = true;
     }
 
     public startBattle(leftCardSprite: PIXI.Sprite, rightCardSprite: PIXI.Sprite): void {
@@ -47,6 +51,7 @@ export default class BattleField extends PIXI.Container {
         this._playerActionBar.revealRectangle();
         this._enemyActionBar.revealRectangle();
         this._infoBar.revealRectangle();
+        this._healthBar.revealHealthBar();
     }
 
     protected beginCardsIdleAnimation(): void {
@@ -119,5 +124,14 @@ export default class BattleField extends PIXI.Container {
         this._infoBar.visible = false;
 
         this.addChild(this._infoBar);
+    }
+
+    protected setupHealthBar(): void {
+        this._healthBar = new HealthBar();
+        this._healthBar.position.set(0, this._appHeight * 0.15);
+
+        this._healthBar.visible = false;
+
+        this.addChild(this._healthBar);
     }
 }
