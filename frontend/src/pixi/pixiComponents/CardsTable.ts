@@ -21,16 +21,21 @@ export default class CardsTable extends PIXI.Container {
     }
 
     constructor(app: PIXI.Application, onCardPick: (card: Card, cardData: any) => void) {
-        super()
+        super();
+
         this._app = app;
         this._onCardPick = onCardPick;
 
-        this._app.stage.on("pointerdown", this.onDragStart.bind(this));
-        this._app.stage.on("pointermove", this.onDragMove.bind(this));
-        this._app.stage.on("pointerup", this.onDragEnd.bind(this));
-        this._app.stage.on("pointerupoutside", this.onDragEnd.bind(this));
-        this._app.stage.on("wheel", (event: WheelEvent) => this.handleScroll(event));
+        this.interactive = true;
+        this.hitArea = new PIXI.Rectangle(0, 0, app.screen.width, app.screen.height);
+
+        this.on("pointerdown", this.onDragStart.bind(this));
+        this.on("pointermove", this.onDragMove.bind(this));
+        this.on("pointerup", this.onDragEnd.bind(this));
+        this.on("pointerupoutside", this.onDragEnd.bind(this));
+        this.on("wheel", (event: WheelEvent) => this.handleScroll(event));
     }
+
 
     public async init(): Promise<void> {
         await this.fetchCardsInfo();
@@ -91,7 +96,6 @@ export default class CardsTable extends PIXI.Container {
             console.error("Error fetching Pokémon data:", error);
         }
     }
-
     protected createCards() {
         this._cardsInfo.forEach((cardData) => {
             const card = new Card(cardData, 450, 580);
@@ -99,12 +103,17 @@ export default class CardsTable extends PIXI.Container {
             this._cards.push(card);
 
             card.interactive = true;
-            card.on("pointerdown", () => this._onCardPick(card, cardData));
+
+            card.on("pointerdown", (event) => {
+                event.stopPropagation();
+                this._onCardPick(card, cardData);
+            });
         });
     }
 
+
     public adjustPosition() {
-        const isPortrait = false
+        const isPortrait = false;
         const margin = isPortrait ? 22 : 50;
         const cardWidth = 450;
         const cardHeight = 580;
@@ -129,6 +138,8 @@ export default class CardsTable extends PIXI.Container {
                 y += cardHeight + margin;
             }
         });
+
+        this.hitArea = new PIXI.Rectangle(0, 0, this.width, y + cardHeight + margin);
 
         this.y = 0;
     }
@@ -172,6 +183,10 @@ export default class CardsTable extends PIXI.Container {
     }
 
     protected handleScroll(event: WheelEvent): void {
+        if (!this.hitArea?.contains(event.offsetX, event.offsetY)) {
+            return;
+        }
+
         const deltaY = event.deltaY;
         const scrollSpeed = 4;
 
