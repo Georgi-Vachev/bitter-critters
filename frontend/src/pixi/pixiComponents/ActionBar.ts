@@ -10,13 +10,15 @@ export default class ActionBar extends PIXI.Container {
     protected _rectangleBackground: PIXI.Graphics;
     protected _topTriangleButton: PIXI.Graphics;
     protected _bottomTriangleButton: PIXI.Graphics;
+    protected _slotClickCallback: (slot: PIXI.Container, index: number, type: "ability" | "consumable") => void;
     protected readonly _appWidth: number = 2560;
     protected readonly _appHeight: number = 1440;
 
-    constructor(side: "left" | "right", theme: Theme) {
+    constructor(side: "left" | "right", theme: Theme, slotClickCallback: (slot: PIXI.Container, index: number, type: "ability" | "consumable") => void) {
         super();
         this._side = side;
         this._isInteractive = side === "right";
+        this._slotClickCallback = slotClickCallback;
 
         this._theme = theme;
 
@@ -45,9 +47,11 @@ export default class ActionBar extends PIXI.Container {
         });
     }
 
-    public useAbility(index: number): void {
+    public useAbility(slotContainer: PIXI.Container, index: number, type: 'ability'): void {
         const slot = this._abilitySlots[index];
         if (!slot) return;
+
+        this._slotClickCallback(slot, index, type);
 
         const cooldownOverlay = new PIXI.Graphics();
         cooldownOverlay.beginFill(0x000000, 0.5);
@@ -60,11 +64,11 @@ export default class ActionBar extends PIXI.Container {
         }, 2000);
     }
 
-    public useConsumable(index: number, count: number): void {
+    public useConsumable(slotContainer: PIXI.Container, index: number, type: 'consumable', count: number): void {
         const slot = this._consumableSlots[index];
         if (!slot) return;
 
-        console.log(`Consumable used at slot ${index}. Remaining count: ${count}`);
+        this._slotClickCallback(slot, index, type);
     }
 
     protected revealTriangleButtons(): void {
@@ -161,8 +165,8 @@ export default class ActionBar extends PIXI.Container {
     }
 
     protected setupLayout(): void {
-        const totalSlots = 4;
-        const slotHeight = (this._appHeight * 0.7) / totalSlots;
+        const totalSlots = 8;
+        const slotHeight = (this._appHeight * 0.7) / (totalSlots / 2); // Dividing by 2 for two rows (abilities and consumables)
 
         for (let i = 0; i < totalSlots; i++) {
             const slot = new PIXI.Container();
@@ -175,20 +179,27 @@ export default class ActionBar extends PIXI.Container {
             slot.position.set(this._appWidth * 0.01, (this._appHeight * 0.15) + i * slotHeight + slotHeight * 0.1);
             this.addChild(slot);
 
-            if (i < totalSlots / 2) {
+            const type: "ability" | "consumable" = i < totalSlots / 2 ? "ability" : "consumable";
+
+            if (type === "ability") {
                 this._abilitySlots.push(slot);
             } else {
                 this._consumableSlots.push(slot);
+                slot.visible = false
             }
 
             if (this._isInteractive) {
                 slot.interactive = true;
-                slot.on("pointerdown", () => this.onSlotClick(i));
+                slot.on("pointerdown", () => this.onSlotClick(slot, i % (totalSlots / 2), type));
             }
         }
     }
 
-    protected onSlotClick(index: number): void {
-        console.log(`Slot ${index} clicked on ${this._side} bar`);
+    protected onSlotClick(slot: PIXI.Container, index: number, type: "ability" | "consumable"): void {
+        if (type === "ability") {
+            this.useAbility(slot, index, 'ability');
+        } else {
+            this.useConsumable(slot, index, 'consumable', 3);
+        }
     }
 }

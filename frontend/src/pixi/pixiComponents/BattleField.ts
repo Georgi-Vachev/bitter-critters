@@ -105,8 +105,8 @@ export default class BattleField extends PIXI.Container {
     }
 
     protected setupActionBars(): void {
-        this._playerActionBar = new ActionBar("right", this._theme);
-        this._enemyActionBar = new ActionBar("left", this._theme);
+        this._playerActionBar = new ActionBar("right", this._theme, this.handleSlotClick.bind(this));
+        this._enemyActionBar = new ActionBar("left", this._theme, this.handleSlotClick.bind(this));
 
         this._playerActionBar.position.set(this._appWidth, 0);
         this._enemyActionBar.position.set(-this._appWidth * 0.1, 0);
@@ -133,5 +133,11 @@ export default class BattleField extends PIXI.Container {
         this._healthBar.visible = false;
 
         this.addChild(this._healthBar);
+    }
+
+    protected handleSlotClick(slot: PIXI.Container, index: number, type: "ability" | "consumable"): void {
+        console.error(`${type} slot ${index} clicked!`);
+        this._healthBar.playerTakeHit(70);
+        this._healthBar.enemyTakeHit(55);
     }
 }
