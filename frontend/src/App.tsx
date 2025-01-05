@@ -9,8 +9,6 @@ const App: React.FC = () => {
     pixiContainerRef.current?.resetApp();
   };
 
-  console.error('WHY AM I PRINTED TWICE?')
-
   return (
     <div className="app-container">
       <button onClick={handleResetPixi}>Reset PIXI App</button>
